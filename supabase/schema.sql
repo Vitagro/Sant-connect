@@ -205,6 +205,12 @@ CREATE INDEX IF NOT EXISTS idx_tx_ordo         ON transactions(ordonnance_id);
 CREATE INDEX IF NOT EXISTS idx_audit_date      ON audit_logs(created_at DESC);
 
 -- ── ROW LEVEL SECURITY ────────────────────────────────────────
+-- Toutes les tables métier sont protégées : RLS activé + une seule
+-- politique, restreinte AU SEUL rôle service_role (TO service_role).
+-- Sans ce "TO service_role", USING (true) s'applique à TOUS les rôles
+-- Postgres — y compris anon, dont la clé publique est déjà exposée
+-- dans le HTML du frontend (meta[name=supa-key]). Le backend Express
+-- (clé service_role) est le seul point d'accès légitime aux données.
 ALTER TABLE ordonnances           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE patients              ENABLE ROW LEVEL SECURITY;
 ALTER TABLE medicaments_prescrits ENABLE ROW LEVEL SECURITY;
@@ -214,16 +220,21 @@ ALTER TABLE confirmations_labo    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications_wa      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE assurance_queue       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE medecins              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pharmacies            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE laboratoires          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs            ENABLE ROW LEVEL SECURITY;
 
 -- Politique service role = accès total (backend uniquement)
 DO $$
 DECLARE t TEXT;
 BEGIN
   FOREACH t IN ARRAY ARRAY['ordonnances','patients','medicaments_prescrits','analyses_prescrites',
-    'confirmations_pharmacie','confirmations_labo','transactions','notifications_wa','assurance_queue']
+    'confirmations_pharmacie','confirmations_labo','transactions','notifications_wa','assurance_queue',
+    'medecins','pharmacies','laboratoires','audit_logs']
   LOOP
     EXECUTE format('DROP POLICY IF EXISTS service_all ON %I', t);
-    EXECUTE format('CREATE POLICY service_all ON %I FOR ALL USING (true)', t);
+    EXECUTE format('CREATE POLICY service_all ON %I FOR ALL TO service_role USING (true)', t);
   END LOOP;
 END$$;
 

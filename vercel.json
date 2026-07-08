@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "name": "sante-connect-vita",
+  "builds": [
+    { "src": "api/server.js", "use": "@vercel/node" },
+    { "src": "public/**",    "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/server.js" },
+    { "src": "/(.*)",     "dest": "/public/$1" },
+    { "src": "/",         "dest": "/public/index.html" }
+  ],
+  "env": {
+    "SUPABASE_URL":            "@supabase_url",
+    "SUPABASE_ANON_KEY":       "@supabase_anon_key",
+    "SUPABASE_SERVICE_KEY":    "@supabase_service_key",
+    "TWILIO_ACCOUNT_SID":      "@twilio_account_sid",
+    "TWILIO_AUTH_TOKEN":       "@twilio_auth_token",
+    "TWILIO_WHATSAPP_NUMBER":  "@twilio_whatsapp_number",
+    "CMI_CLIENT_ID":           "@cmi_client_id",
+    "CMI_SECRET":              "@cmi_secret",
+    "CMI_GATEWAY_URL":         "@cmi_gateway_url",
+    "VIREMENT_SECRET":         "@virement_secret",
+    "BANK_IBAN":               "@bank_iban",
+    "BANK_SWIFT":              "@bank_swift",
+    "FRONTEND_URL":            "https://vita-core.org"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin",  "value": "https://vita-core.org" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type,Authorization" }
+      ]
+    }
+  ]
+}

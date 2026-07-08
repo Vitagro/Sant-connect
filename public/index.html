@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SantéConnect v3</title>
+  <meta name="supa-url" content="https://XXXXXXXXXXXX.supabase.co">
+  <meta name="supa-key" content="VOTRE_ANON_KEY">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ── UPDATE BANNER ── -->
+<div class="update-banner" id="update-banner">
+  <div class="update-banner-text">
+    🚀 <strong>SantéConnect v3</strong> — Nouvelles fonctionnalités :
+    <div class="update-items">
+      <span class="update-tag">🦷 Dentiste & toutes spécialités</span>
+      <span class="update-tag">💳 6 méthodes de paiement</span>
+      <span class="update-tag">🏛 Assurances CNSS/CNOPS/Wafa...</span>
+      <span class="update-tag">🇲🇦 Migration nationale planifiée</span>
+    </div>
+  </div>
+  <button class="update-dismiss" onclick="dismissBanner()">✕</button>
+</div>
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <a class="nav-brand" href="#">
+    <div class="nav-brand-icon">🏥</div>
+    <div>
+      <div id="nav-brand-name">SantéConnect</div>
+      <div id="nav-brand-sub">Plateforme médicale connectée</div>
+    </div>
+  </a>
+  <div class="nav-right">
+    <span class="version-badge">v3.0</span>
+    <div class="nav-lang">
+      <button class="lang-btn active" id="lang-fr" onclick="setLang('fr')">🇫🇷 FR</button>
+      <button class="lang-btn" id="lang-ar" onclick="setLang('ar')">🇲🇦 ع</button>
+      <button class="lang-btn" id="lang-en" onclick="setLang('en')">🇬🇧 EN</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- ── ROLE SELECTOR ── -->
+  <div class="role-header">
+    <h1 data-t="choose_role">Choisissez votre rôle</h1>
+    <p data-t="choose_role_sub">Accédez à votre espace personnalisé</p>
+  </div>
+  <div class="role-grid">
+    <div class="role-card" data-role="medecin" onclick="setRole('medecin')">
+      <div class="role-icon">🩺</div>
+      <div class="role-title" data-t="role_medecin">Médecin</div>
+      <div class="role-desc" data-t="role_medecin_sub">Ordonnances & analyses</div>
+    </div>
+    <div class="role-card" data-role="patient" onclick="setRole('patient')">
+      <div class="role-icon">🧑‍⚕️</div>
+      <div class="role-title" data-t="role_patient">Patient</div>
+      <div class="role-desc" data-t="role_patient_sub">Suivi & notifications</div>
+    </div>
+    <div class="role-card" data-role="labo" onclick="setRole('labo')">
+      <div class="role-icon">🔬</div>
+      <div class="role-title" data-t="role_labo">Laboratoire</div>
+      <div class="role-desc" data-t="role_labo_sub">Demandes d'analyses</div>
+    </div>
+    <div class="role-card" data-role="pharmacie" onclick="setRole('pharmacie')">
+      <div class="role-icon">💊</div>
+      <div class="role-title" data-t="role_pharmacie">Pharmacie</div>
+      <div class="role-desc" data-t="role_pharmacie_sub">Stock & ordonnances</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ PAGE MÉDECIN ══════════════════ -->
+  <div id="page-medecin" class="page">
+
+    <!-- Sélecteur de spécialité -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-icon">🏥</div>
+        <div><h2 data-t="spec_title">Sélectionnez votre spécialité</h2></div>
+      </div>
+      <div class="card-body">
+        <div class="specialty-grid">
+          <div class="spec-card active" data-spec="generaliste" onclick="setSpecialty('generaliste')"><div class="spec-icon">🩺</div><div class="spec-name" data-t="spec_generaliste">Médecine Générale</div></div>
+          <div class="spec-card" data-spec="dentiste" onclick="setSpecialty('dentiste')"><div class="spec-icon">🦷</div><div class="spec-name" data-t="spec_dentiste">Dentisterie</div></div>
+          <div class="spec-card" data-spec="cardio" onclick="setSpecialty('cardio')"><div class="spec-icon">❤️</div><div class="spec-name" data-t="spec_cardio">Cardiologie</div></div>
+          <div class="spec-card" data-spec="ophtalmo" onclick="setSpecialty('ophtalmo')"><div class="spec-icon">👁️</div><div class="spec-name" data-t="spec_ophtalmo">Ophtalmologie</div></div>
+          <div class="spec-card" data-spec="pedia" onclick="setSpecialty('pedia')"><div class="spec-icon">👶</div><div class="spec-name" data-t="spec_pedia">Pédiatrie</div></div>
+          <div class="spec-card" data-spec="gyneco" onclick="setSpecialty('gyneco')"><div class="spec-icon">🌸</div><div class="spec-name" data-t="spec_gyneco">Gynécologie</div></div>
+          <div class="spec-card" data-spec="kine" onclick="setSpecialty('kine')"><div class="spec-icon">🏃</div><div class="spec-name" data-t="spec_kine">Kinésithérapie</div></div>
+          <div class="spec-card" data-spec="radio" onclick="setSpecialty('radio')"><div class="spec-icon">🩻</div><div class="spec-name" data-t="spec_radio">Radiologie</div></div>
+          <div class="spec-card" data-spec="psychia" onclick="setSpecialty('psychia')"><div class="spec-icon">🧠</div><div class="spec-name" data-t="spec_psychia">Psychiatrie</div></div>
+          <div class="spec-card" data-spec="orl" onclick="setSpecialty('orl')"><div class="spec-icon">👂</div><div class="spec-name" data-t="spec_orl">ORL</div></div>
+          <div class="spec-card" data-spec="dermato" onclick="setSpecialty('dermato')"><div class="spec-icon">🔬</div><div class="spec-name" data-t="spec_dermato">Dermatologie</div></div>
+          <div class="spec-card" data-spec="ortho" onclick="setSpecialty('ortho')"><div class="spec-icon">🦴</div><div class="spec-name" data-t="spec_ortho">Orthopédie</div></div>
+          <div class="spec-card" data-spec="neuro" onclick="setSpecialty('neuro')"><div class="spec-icon">🧬</div><div class="spec-name" data-t="spec_neuro">Neurologie</div></div>
+          <div class="spec-card" data-spec="endocrino" onclick="setSpecialty('endocrino')"><div class="spec-icon">⚗️</div><div class="spec-name" data-t="spec_endocrino">Endocrinologie</div></div>
+          <div class="spec-card" data-spec="onco" onclick="setSpecialty('onco')"><div class="spec-icon">🎗️</div><div class="spec-name" data-t="spec_onco">Oncologie</div></div>
+        </div>
+        <!-- Champs spécifiques à la spécialité -->
+        <div id="spec-fields-container"></div>
+      </div>
+    </div>
+
+    <!-- Infos Médecin -->
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">🩺</div><div><h2 data-t="med_info_title">Informations du médecin</h2><p data-t="med_info_sub">Identité & coordonnées professionnelles</p></div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label><span data-t="med_nom">Nom</span> <span class="req">*</span></label><input type="text" id="med-nom" placeholder="Alaoui"><span class="error-msg">Obligatoire</span></div>
+          <div class="form-group"><label><span data-t="med_prenom">Prénom</span> <span class="req">*</span></label><input type="text" id="med-prenom" placeholder="Karim"><span class="error-msg">Obligatoire</span></div>
+          <div class="form-group"><label><span data-t="med_titre">Spécialité</span> <span class="req">*</span></label><select id="med-titre"></select></div>
+          <div class="form-group"><label data-t="med_inpe">N° INPE</label><input type="text" id="med-inpe" placeholder="MA-12345678"></div>
+          <div class="form-group"><label data-t="med_rpps">N° RPPS / Ordre</label><input type="text" id="med-rpps" placeholder="10000012345"></div>
+          <div class="form-group"><label data-t="med_assurance_conv">Conventions</label><input type="text" id="med-assurance" placeholder="CNSS, CNOPS, Mutuelle..."></div>
+          <div class="form-group full"><label><span data-t="med_cabinet">Cabinet / Clinique / Hôpital</span> <span class="req">*</span></label><input type="text" id="med-cabinet" placeholder="Ex: Cabinet Médical Al Amal"><span class="error-msg">Obligatoire</span></div>
+          <div class="form-group"><label data-t="med_adresse">Adresse</label><input type="text" id="med-adresse" placeholder="14 Av. Mohammed VI, Guéliz"></div>
+          <div class="form-group"><label><span data-t="med_ville">Ville</span> <span class="req">*</span></label><input type="text" id="med-ville" placeholder="Marrakech"><span class="error-msg">Obligatoire</span></div>
+          <div class="form-group"><label><span data-t="med_tel">Téléphone</span> <span class="req">*</span></label><input type="tel" id="med-tel" placeholder="0524 12 34 56"><span class="error-msg">Obligatoire</span></div>
+          <div class="form-group"><label data-t="med_email">Email</label><input type="email" id="med-email" placeholder="dr.alaoui@email.ma"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Infos Patient -->
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">🧑‍⚕️</div><div><h2 data-t="pat_info_title">Informations du patient</h2><p data-t="pat_info_sub">Identité complète</p></div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label><span data-t="pat_nom">Nom</span> <span class="req">*</span></label><input type="text" id="pat-nom-m"><span class="error-msg">Obligatoire</span></div>
+          <div class="form-group"><label><span data-t="pat_prenom">Prénom</span> <span class="req">*</span></label><input type="text" id="pat-prenom-m"><span class="error-msg">Obligatoire</span></div>
+          <div class="form-group"><label><span data-t="pat_dob">Date de naissance</span> <span class="req">*</span></label><input type="date" id="pat-dob-m"><span class="error-msg">Obligatoire</span></div>
+          <div class="form-group"><label data-t="pat_cin">N° CIN / Assurance</label><input type="text" id="pat-cin-m" placeholder="AB123456"></div>
+          <div class="form-group"><label><span data-t="pat_tel">Téléphone</span> <span class="req">*</span></label><input type="tel" id="pat-tel-m" placeholder="0661 23 45 67" oninput="document.getElementById('wa-patient-tel').value=this.value"><div class="hint">📱 Notification WhatsApp</div><span class="error-msg">Obligatoire</span></div>
+          <div class="form-group"><label data-t="pat_sexe">Sexe</label><select id="pat-sexe-m"><option value="">—</option><option value="M" data-t="pat_sexe_m">Masculin</option><option value="F" data-t="pat_sexe_f">Féminin</option></select></div>
+          <div class="form-group"><label data-t="pat_poids">Poids (kg)</label><input type="number" id="pat-poids-m" placeholder="70" min="1" max="300"></div>
+          <div class="form-group"><label data-t="pat_taille">Taille (cm)</label><input type="number" id="pat-taille-m" placeholder="175" min="30" max="250"></div>
+          <div class="form-group"><label data-t="pat_allergies">Allergies connues</label><input type="text" id="pat-allergies-m" placeholder="Pénicilline, Aspirine..."></div>
+          <div class="form-group"><label data-t="pat_assurance">N° Assurance</label><input type="text" id="pat-assurance-m" placeholder="CNSS-123456789"></div>
+          <div class="form-group full"><label data-t="pat_antecedents">Antécédents médicaux</label><textarea id="pat-antecedents-m" placeholder="Maladies chroniques, chirurgies, traitements en cours..."></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagnostic -->
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">📋</div><div><h2 data-t="diag_title">Diagnostic</h2></div></div>
+      <div class="card-body">
+        <div class="form-group" style="margin-bottom:12px"><label><span data-t="diag_label">Diagnostic principal</span> <span class="req">*</span></label><input type="text" id="diag-main" data-t-ph="diag_placeholder"><span class="error-msg">Obligatoire</span></div>
+        <div class="form-group"><label data-t="diag_notes">Notes cliniques</label><textarea id="diag-notes" placeholder="Observations, contexte clinique, résultats précédents..."></textarea></div>
+      </div>
+    </div>
+
+    <!-- Prescription médicamenteuse -->
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">💊</div><div><h2 data-t="drugs_title">Prescription médicamenteuse</h2><p data-t="drugs_sub">Sélectionnez médicament et conditions d'utilisation</p></div></div>
+      <div class="card-body">
+        <div class="drug-table-wrap">
+          <table class="drug-table">
+            <thead><tr>
+              <th class="col-num" data-t="col_num">#</th>
+              <th class="col-name" data-t="col_medicament">Médicament</th>
+              <th class="col-dosage" data-t="col_dosage">Dosage / Forme</th>
+              <th class="col-freq" data-t="col_frequence">Fréquence</th>
+              <th class="col-duration" data-t="col_duree">Durée</th>
+              <th class="col-condition" data-t="col_condition">Condition / Utilisation</th>
+              <th class="col-moment" data-t="col_moment">Moment</th>
+              <th class="col-notes" data-t="col_notes">Notes</th>
+              <th class="col-action"></th>
+            </tr></thead>
+            <tbody id="drug-tbody"></tbody>
+          </table>
+        </div>
+        <button class="btn-add-drug" onclick="addDrugRow()">＋ <span data-t="add_drug">Ajouter un médicament</span></button>
+      </div>
+    </div>
+
+    <!-- Demandes d'analyses -->
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">🔬</div><div><h2 data-t="analyse_title">Demandes d'analyses</h2><p data-t="analyse_sub">Examens biologiques et radiologiques</p></div></div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="form-grid-2"><div class="form-group"><label data-t="analyse_type">Type d'analyse</label><select id="analyse-type-1"></select></div><div class="form-group"><label data-t="analyse_urgence">Urgence</label><select id="urgence-1"></select></div></div>
+          <div class="form-grid-2"><div class="form-group"><label data-t="analyse_type">Type d'analyse</label><select id="analyse-type-2"></select></div><div class="form-group"><label data-t="analyse_urgence">Urgence</label><select id="urgence-2"></select></div></div>
+          <div class="form-grid-2"><div class="form-group"><label data-t="analyse_type">Type d'analyse</label><select id="analyse-type-3"></select></div><div class="form-group"><label data-t="analyse_urgence">Urgence</label><select id="urgence-3"></select></div></div>
+        </div>
+        <div class="form-group" style="margin-top:12px"><label data-t="analyse_notes">Instructions pour le laboratoire</label><textarea id="analyse-notes" placeholder="Jeûne requis, heure du dernier repas, contexte clinique..."></textarea></div>
+      </div>
+    </div>
+
+    <!-- ══ MODULE ASSURANCES ══ -->
+    <div class="insurance-section">
+      <div class="insurance-header">
+        <div class="card-header-icon">🏛</div>
+        <div><h2 data-t="insurance_title">Couverture d'assurance</h2><p data-t="insurance_sub">Vérification automatique ou manuelle selon l'assureur</p></div>
+      </div>
+      <div class="insurance-body">
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:12px">
+          <span style="color:var(--accent);font-weight:600">🟢 API automatique</span> = Vérification instantanée (CNSS, CNOPS) &nbsp;|&nbsp;
+          <span style="color:var(--warning);font-weight:600">🟡 Manuel</span> = Confirmation sous 24h ouvrées
+        </p>
+        <div class="insurance-grid" id="insurance-grid"></div>
+        <div class="form-grid-2">
+          <div class="form-group"><label data-t="ins_num_police">N° Police / Adhérent</label><input type="text" id="ins-police" placeholder="Ex: AMO-123456789"></div>
+          <div class="form-group"><label data-t="ins_type_couv">Type de couverture</label><select id="ins-couv-select"></select></div>
+        </div>
+        <div style="margin-top:10px">
+          <button class="btn btn-primary" onclick="verifyInsurance()" style="background:linear-gradient(135deg,#7c2d12,#c2410c);border:none">
+            🏛 <span data-t="ins_verify">Vérifier la couverture</span>
+          </button>
+        </div>
+        <div id="ins-status" style="display:none;margin-top:10px"></div>
+        <script>
+          document.getElementById('ins-status') && (document.getElementById('ins-status').style.display = '');
+        </script>
+      </div>
+    </div>
+
+    <!-- ══ MODULE PAIEMENT ══ -->
+    <div class="payment-section">
+      <div class="payment-header">
+        <div class="card-header-icon">💳</div>
+        <div><h2 data-t="payment_title">Module de paiement</h2><p data-t="payment_sub">Toutes méthodes de paiement sécurisées</p></div>
+      </div>
+      <div class="payment-body">
+        <div class="form-group" style="max-width:260px;margin-bottom:16px">
+          <label data-t="pay_montant">Montant à régler (MAD)</label>
+          <input type="number" id="pay-montant" placeholder="Ex: 350" min="0" step="0.01">
+        </div>
+        <p style="font-size:12px;color:var(--text-2);margin-bottom:10px" data-t="pay_choose">Choisissez votre méthode de paiement</p>
+        <div class="payment-methods">
+          <div class="pay-method cmi" onclick="selectPayMethod('cmi')">
+            <div class="pm-icon">💳</div>
+            <div class="pm-name" data-t="pay_cmi">CMI — 3D Secure</div>
+            <div class="pm-sub" data-t="pay_cmi_sub">Visa / Mastercard</div>
+          </div>
+          <div class="pay-method payzone" onclick="selectPayMethod('payzone')">
+            <div class="pm-icon">🔵</div>
+            <div class="pm-name" data-t="pay_payzone">PayZone</div>
+            <div class="pm-sub" data-t="pay_payzone_sub">Paiement en ligne</div>
+          </div>
+          <div class="pay-method virement" onclick="selectPayMethod('virement')">
+            <div class="pm-icon">🏦</div>
+            <div class="pm-name" data-t="pay_virement">Virement bancaire</div>
+            <div class="pm-sub" data-t="pay_virement_sub">Référence générée</div>
+          </div>
+          <div class="pay-method edahabia" onclick="selectPayMethod('edahabia')">
+            <div class="pm-icon">🟢</div>
+            <div class="pm-name" data-t="pay_edahabia">edahabia</div>
+            <div class="pm-sub" data-t="pay_edahabia_sub">Carte Algérie Poste</div>
+          </div>
+          <div class="pay-method wafacash" onclick="selectPayMethod('wafacash')">
+            <div class="pm-icon">🔴</div>
+            <div class="pm-name" data-t="pay_wafacash">Wafacash</div>
+            <div class="pm-sub" data-t="pay_wafacash_sub">Paiement espèces</div>
+          </div>
+          <div class="pay-method cash" onclick="selectPayMethod('cash')">
+            <div class="pm-icon">💵</div>
+            <div class="pm-name" data-t="pay_cash">Espèces</div>
+            <div class="pm-sub" data-t="pay_cash_sub">À la réception</div>
+          </div>
+        </div>
+        <!-- Détails CMI -->
+        <div class="pay-detail" id="pay-detail-cmi">
+          <p style="font-size:13px;font-weight:600;color:#003087;margin-bottom:8px">💳 CMI — Centre Monétique Interbancaire</p>
+          <p style="font-size:12px;color:var(--text-2);margin-bottom:8px">Paiement sécurisé 3D Secure — Visa, Mastercard, CIH Card, Attijariwafa, BMCE...</p>
+          <p style="font-size:11px;color:var(--text-3)">Vous serez redirigé vers la page sécurisée CMI. Votre banque vous enverra un code OTP par SMS.</p>
+        </div>
+        <!-- Détails PayZone -->
+        <div class="pay-detail" id="pay-detail-payzone">
+          <p style="font-size:13px;font-weight:600;color:#6B21A8;margin-bottom:8px">🔵 PayZone — Paiement en ligne Maroc</p>
+          <p style="font-size:12px;color:var(--text-2)">Passerelle de paiement certifiée PCI-DSS. Compatible toutes cartes bancaires marocaines.</p>
+        </div>
+        <!-- Détails Virement -->
+        <div class="pay-detail" id="pay-detail-virement">
+          <p style="font-size:13px;font-weight:600;color:#854F0B;margin-bottom:10px">🏦 Virement bancaire — Référence unique</p>
+          <div style="margin-bottom:10px">
+            <div style="font-size:11px;color:var(--text-3);margin-bottom:4px" data-t="pay_ref_label">Référence de virement :</div>
+            <div class="pay-ref" id="pay-ref-value"></div>
+          </div>
+          <div class="form-grid-2" style="font-size:12px;color:var(--text-2);gap:8px">
+            <div><strong data-t="pay_iban_label">IBAN :</strong> MA64 0000 0000 0000 0000 0000 00</div>
+            <div><strong data-t="pay_swift_label">SWIFT :</strong> BCMAMAMC</div>
+          </div>
+          <p style="font-size:11px;color:var(--text-3);margin-top:8px" data-t="pay_valid">Valide 72h — Mentionner la référence dans le motif</p>
+        </div>
+        <!-- Détails edahabia -->
+        <div class="pay-detail" id="pay-detail-edahabia">
+          <p style="font-size:13px;font-weight:600;color:#059669;margin-bottom:8px">🟢 edahabia — Algérie Poste</p>
+          <p style="font-size:12px;color:var(--text-2)">Carte de paiement électronique Algérie Poste. Acceptée pour les patients algériens.</p>
+        </div>
+        <!-- Détails Wafacash -->
+        <div class="pay-detail" id="pay-detail-wafacash">
+          <p style="font-size:13px;font-weight:600;color:#DC2626;margin-bottom:8px">🔴 Wafacash — Paiement espèces via agence</p>
+          <p style="font-size:12px;color:var(--text-2)">Paiement possible dans toutes les agences Wafacash au Maroc. Code de paiement généré après confirmation.</p>
+        </div>
+        <!-- Détails Cash -->
+        <div class="pay-detail" id="pay-detail-cash">
+          <p style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px">💵 Paiement en espèces — À la réception</p>
+          <p style="font-size:12px;color:var(--text-2)" data-t="pay_cash_inst">Présentez ce document à la réception. Paiement en MAD uniquement.</p>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn btn-pay" onclick="proceedPayment()">💳 <span data-t="pay_btn">Procéder au paiement</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ WHATSAPP ══ -->
+    <div class="wa-config-card">
+      <div class="wa-config-header">
+        <div style="font-size:22px">💬</div>
+        <div><h2 data-t="wa_title">Notifications WhatsApp</h2><p data-t="wa_sub">Patient + Pharmacie + Laboratoire notifiés automatiquement</p></div>
+      </div>
+      <div class="wa-config-body">
+        <div class="server-status-bar">
+          <span>Statut serveur :</span>
+          <span id="server-badge"><span style="color:var(--text-3)">● Vérification...</span></span>
+        </div>
+        <div class="flow-diagram">
+          <div class="flow-node"><div class="flow-node-icon">🩺</div><div class="flow-node-label">Médecin</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node"><div class="flow-node-icon" style="background:#DCF8C6;border-color:#25D366">💬</div><div class="flow-node-label">WhatsApp</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node"><div class="flow-node-icon">🧑‍⚕️</div><div class="flow-node-label">Patient</div></div>
+          <span style="color:var(--border);font-size:14px">+</span>
+          <div class="flow-node"><div class="flow-node-icon">💊</div><div class="flow-node-label">Pharmacie</div></div>
+          <span style="color:var(--border);font-size:14px">+</span>
+          <div class="flow-node"><div class="flow-node-icon">🔬</div><div class="flow-node-label">Labo</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node"><div class="flow-node-icon" style="background:#E1F5EE;border-color:#00C9A7">🗄️</div><div class="flow-node-label" style="color:var(--primary)">Supabase</div></div>
+        </div>
+        <div class="wa-numbers-grid">
+          <div class="wa-number-group">
+            <div class="wa-number-label">🧑‍⚕️ <span data-t="wa_patient">Numéro Patient</span></div>
+            <input type="tel" id="wa-patient-tel" placeholder="0661 23 45 67">
+            <button class="btn-test-wa" onclick="testerNotificationWA('patient','wa-patient-tel')">📤 <span data-t="test_wa">Test WhatsApp</span></button>
+          </div>
+          <div class="wa-number-group">
+            <div class="wa-number-label">💊 <span data-t="wa_pharmacie">Numéro Pharmacie</span></div>
+            <select id="pharmacie-nom-wa-sel" style="width:100%;padding:5px 8px;border:1.5px solid var(--border);border-radius:5px;font-size:11px;margin-bottom:4px;background:var(--surface);color:var(--text);font-family:var(--font-sans)"><option value="">— Ou choisir dans la liste —</option></select><input type="text" id="pharmacie-nom-wa" placeholder="Nom de la pharmacie" style="margin-bottom:5px">
+            <input type="tel" id="pharmacie-tel" placeholder="0524 34 56 78">
+            <button class="btn-test-wa" onclick="testerNotificationWA('pharmacie','pharmacie-tel')">📤 <span data-t="test_wa">Test WhatsApp</span></button>
+          </div>
+          <div class="wa-number-group">
+            <div class="wa-number-label">🔬 <span data-t="wa_labo">Numéro Laboratoire</span></div>
+            <select id="labo-nom-wa-sel" style="width:100%;padding:5px 8px;border:1.5px solid var(--border);border-radius:5px;font-size:11px;margin-bottom:4px;background:var(--surface);color:var(--text);font-family:var(--font-sans)"><option value="">— Ou choisir dans la liste —</option></select><input type="text" id="labo-nom-wa" placeholder="Nom du laboratoire" style="margin-bottom:5px">
+            <input type="tel" id="labo-tel" placeholder="0524 67 89 01">
+            <button class="btn-test-wa" onclick="testerNotificationWA('labo','labo-tel')">📤 <span data-t="test_wa">Test WhatsApp</span></button>
+          </div>
+          <div class="wa-number-group">
+            <div class="wa-number-label">🩺 <span data-t="wa_medecin">Votre numéro (copie)</span></div>
+            <input type="tel" id="wa-medecin-tel" placeholder="Votre numéro WhatsApp">
+            <button class="btn-test-wa" onclick="testerNotificationWA('medecin','wa-medecin-tel')">📤 <span data-t="test_wa">Test WhatsApp</span></button>
+          </div>
+        </div>
+        <div id="wa-panel"></div>
+      </div>
+    </div>
+
+    <!-- Signature & Envoi -->
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">✍️</div><div><h2 data-t="sig_title">Signature électronique & Envoi</h2></div></div>
+      <div class="card-body">
+        <div class="form-grid-2" style="margin-bottom:14px">
+          <div class="form-group"><label data-t="date_ordo">Date de l'ordonnance</label><input type="date" id="date-ordo"></div>
+          <div class="form-group"><label data-t="lieu_ordo">Lieu</label><input type="text" id="lieu-ordo" placeholder="Ex: Marrakech"></div>
+        </div>
+        <div class="sig-zone">
+          <canvas id="sigCanvas"></canvas>
+          <div class="sig-hint" data-t="sig_sub">Signez dans le cadre ci-dessous</div>
+          <div class="sig-actions">
+            <button class="btn btn-ghost" onclick="clearSignature()" style="font-size:12px;padding:5px 12px">✕ <span data-t="sig_clear">Effacer</span></button>
+          </div>
+        </div>
+        <div class="form-actions" style="margin-top:16px">
+          <button class="btn btn-ghost" onclick="showToast('💾 Brouillon enregistré')">💾 <span data-t="save_draft">Brouillon</span></button>
+          <button class="btn btn-outline" onclick="previewOrdo()">👁 <span data-t="preview_ordo">Aperçu</span></button>
+          <button class="btn btn-wa" onclick="previewOrdo()">💬 <span data-t="send_ordo">Envoyer + Notifier WhatsApp</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MIGRATION NATIONALE ══ -->
+    <div class="migration-section">
+      <div class="migration-title">🇲🇦 <span data-t="migration_title">Migration vers hébergement national</span></div>
+      <div class="migration-sub" data-t="migration_sub">Transition vers les serveurs Maroc (Inwi / Orange / IAM)</div>
+      <div class="migration-phases">
+        <div class="phase-card active-phase">
+          <div class="phase-title">✅ <span data-t="phase1_title">Phase 1 — Actuelle (MVP)</span></div>
+          <div class="phase-item"><div class="phase-dot"></div>Frontend : Vercel CDN (Edge)</div>
+          <div class="phase-item"><div class="phase-dot"></div>Base de données : Supabase (PostgreSQL)</div>
+          <div class="phase-item"><div class="phase-dot"></div>WhatsApp : Twilio API</div>
+          <div class="phase-item"><div class="phase-dot"></div>Paiement : CMI Sandbox</div>
+          <div class="phase-item"><div class="phase-dot"></div>Sécurité : RLS + AES-256 + TLS 1.3</div>
+          <div class="phase-progress"><div class="phase-progress-fill" style="width:100%"></div></div>
+          <div class="migration-progress-label">✅ Déployé</div>
+        </div>
+        <div class="phase-card">
+          <div class="phase-title">🔜 <span data-t="phase2_title">Phase 2 — Production nationale</span></div>
+          <div class="phase-item"><div class="phase-dot"></div>Hébergeur : Inwi Cloud / Orange / IAM</div>
+          <div class="phase-item"><div class="phase-dot"></div>PostgreSQL On-Premise (Maroc)</div>
+          <div class="phase-item"><div class="phase-dot"></div>Données ne quittent pas le territoire</div>
+          <div class="phase-item"><div class="phase-dot"></div>Conformité CNDP Art. 43-46 (transferts)</div>
+          <div class="phase-item"><div class="phase-dot"></div>CMI Production + SSL wildcard</div>
+          <div class="phase-item"><div class="phase-dot"></div>Audit de sécurité externe (pentest)</div>
+          <div class="phase-progress"><div class="phase-progress-fill" style="width:15%"></div></div>
+          <div class="migration-progress-label">📋 Planifiée — Mois 7–12</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ROADMAP MISES À JOUR ══ -->
+    <div class="updates-section">
+      <div class="updates-header">
+        <div style="font-size:18px">🗺️</div>
+        <div><h2 data-t="updates_title">Mises à jour prévues</h2><p data-t="updates_sub">Roadmap SantéConnect v3</p></div>
+      </div>
+      <div class="updates-body">
+        <div class="update-timeline">
+
+          <div class="update-item">
+            <div class="update-dot done"></div>
+            <div class="update-version">v1.0 — Lancé</div>
+            <div class="update-title">🏥 Plateforme de base</div>
+            <div class="update-desc">Médecin, Patient, Pharmacie, Laboratoire. Ordonnances + Notifications WhatsApp. Trilangue FR/AR/EN.</div>
+            <div class="update-tags"><span class="update-tag-item tag-done">✅ Livré</span></div>
+          </div>
+
+          <div class="update-item">
+            <div class="update-dot done"></div>
+            <div class="update-version">v2.0 — Livré</div>
+            <div class="update-title">🗄️ Intégration Supabase + Vercel</div>
+            <div class="update-desc">Base de données PostgreSQL, RLS sécurité, API Node.js, déploiement Vercel, variables d'environnement.</div>
+            <div class="update-tags"><span class="update-tag-item tag-done">✅ Livré</span><span class="update-tag-item tag-security">🔒 Sécurité</span></div>
+          </div>
+
+          <div class="update-item">
+            <div class="update-dot current"></div>
+            <div class="update-version">v3.0 — En cours</div>
+            <div class="update-title">🦷 Toutes spécialités + Paiement + Assurances</div>
+            <div class="update-desc">25 spécialités médicales (dentiste, ophtalmo, kiné, psy...). 6 méthodes de paiement (CMI, Virement, Wafacash...). 12 compagnies d'assurances marocaines.</div>
+            <div class="update-tags"><span class="update-tag-item tag-current">🔵 Actuel</span><span class="update-tag-item tag-security">🔒 CNDP</span></div>
+          </div>
+
+          <div class="update-item">
+            <div class="update-dot planned"></div>
+            <div class="update-version">v3.1 — Prévu T2 2025</div>
+            <div class="update-title">📱 Application Mobile (React Native)</div>
+            <div class="update-desc">App Android & iOS avec Expo. Notifications push. Scan d'ordonnance. Biométrie (Touch ID / Face ID). Mode hors-ligne.</div>
+            <div class="update-tags"><span class="update-tag-item tag-planned">📋 Planifié</span></div>
+          </div>
+
+          <div class="update-item">
+            <div class="update-dot planned"></div>
+            <div class="update-version">v3.2 — Prévu T3 2025</div>
+            <div class="update-title">🤖 IA Médicale (Aide à la prescription)</div>
+            <div class="update-desc">Détection automatique d'interactions médicamenteuses. Vérification des contre-indications selon les allergies. Suggestion de doses selon poids/âge.</div>
+            <div class="update-tags"><span class="update-tag-item tag-planned">📋 Planifié</span><span class="update-tag-item tag-security">⚠️ Validation médicale requise</span></div>
+          </div>
+
+          <div class="update-item">
+            <div class="update-dot planned"></div>
+            <div class="update-version">v4.0 — Prévu T4 2025</div>
+            <div class="update-title">🇲🇦 Migration Hébergement National Maroc</div>
+            <div class="update-desc">Transfert complet vers serveurs Inwi/Orange/IAM. Données 100% sur territoire marocain. Conformité totale CNDP Art. 43-46. CMI Production. Audit pentest externe.</div>
+            <div class="update-tags"><span class="update-tag-item tag-planned">📋 Planifié</span><span class="update-tag-item tag-security">🔒 Souveraineté données</span></div>
+          </div>
+
+          <div class="update-item">
+            <div class="update-dot planned"></div>
+            <div class="update-version">v4.1 — Prévu 2026</div>
+            <div class="update-title">🏥 Téléconsultation (avec agrément)</div>
+            <div class="update-desc">Consultation vidéo sécurisée entre médecin et patient. Signature numérique qualifiée. Intégration Dossier Médical Partagé (DMP). Agrément Ministère de la Santé Maroc.</div>
+            <div class="update-tags"><span class="update-tag-item tag-planned">📋 Planifié</span><span class="update-tag-item tag-security">⚠️ Agrément requis</span></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-medecin -->
+
+  <!-- ══════════════════ PAGE PATIENT ══════════════════ -->
+  <div id="page-patient" class="page">
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">🗺️</div><div><h2>Ma région & mes prestataires</h2></div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label><span data-t="pat_nom">Nom</span> <span class="req">*</span></label><input type="text" id="pat-nom-p"></div>
+          <div class="form-group"><label><span data-t="pat_prenom">Prénom</span> <span class="req">*</span></label><input type="text" id="pat-prenom-p"></div>
+          <div class="form-group"><label>📱 Téléphone (WhatsApp)</label><input type="tel" id="pat-tel-p" placeholder="0661 23 45 67"></div>
+          <div class="form-group"><label data-t="pat_region">Région</label><select id="pat-region"></select></div>
+          <div class="form-group"><label data-t="pat_ville">Ville / Quartier</label><input type="text" id="pat-ville" placeholder="Marrakech — Guéliz"></div>
+          <div class="form-group"><label>N° Assurance</label><input type="text" id="pat-assurance-p" placeholder="CNSS-123456789"></div>
+          <div class="form-group"><label data-t="pat_pharma_pref">Pharmacie préférée</label><input type="text" id="pat-pharma" placeholder="Ex: Pharmacie Al Amal"></div>
+          <div class="form-group"><label data-t="pat_labo_pref">Laboratoire préféré</label><input type="text" id="pat-labo" placeholder="Ex: Labo Pasteur Marrakech"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="savePatientPrefs()">💾 <span data-t="save_prefs">Enregistrer mes préférences</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">🔔</div><div><h2 data-t="pat_notifs_title">Notifications reçues</h2></div></div>
+      <div class="card-body">
+        <div class="notif notif-done"><div class="notif-icon">💊</div><div class="notif-content"><div class="notif-title">Pharmacie Al Amal — <span class="badge badge-done" data-t="badge_confirmed">Confirmé</span></div><div class="notif-desc">Amoxicilline 500mg, Ibuprofène 400mg — Prix: <strong>87 MAD</strong></div><div class="notif-time">📱 WhatsApp · Il y a 5 min</div></div></div>
+        <div class="notif notif-new"><div class="notif-icon">🔬</div><div class="notif-content"><div class="notif-title">Labo Pasteur — <span class="badge badge-new" data-t="badge_new">Nouveau</span></div><div class="notif-desc">RDV disponible demain 9h–11h · Bilan sanguin complet</div><div class="notif-time">📱 WhatsApp · Il y a 12 min</div></div></div>
+        <div class="notif notif-new"><div class="notif-icon">🏛</div><div class="notif-content"><div class="notif-title">CNSS — Couverture vérifiée <span class="badge badge-done">Confirmé</span></div><div class="notif-desc">Taux de remboursement : 70% · Plafond annuel : 30 000 MAD</div><div class="notif-time">📱 WhatsApp · Il y a 18 min</div></div></div>
+        <div class="notif notif-pending"><div class="notif-icon">⏳</div><div class="notif-content"><div class="notif-title">Wafa Assurance — <span class="badge badge-pending" data-t="badge_pending">En attente</span></div><div class="notif-desc">Vérification manuelle en cours · Confirmation sous 24h</div><div class="notif-time">📱 WhatsApp · Il y a 30 min</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ PAGE LABO ══════════════════ -->
+  <div id="page-labo" class="page">
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">📥</div><div><h2 data-t="labo_requests_title">Demandes d'analyses reçues</h2></div></div>
+      <div class="card-body">
+        <div class="req-card">
+          <div class="req-card-header"><div><div class="req-patient">Youssef Benali</div><div class="req-meta">Dr. Karim Alaoui · Cardiologue · Marrakech · il y a 12 min · 📱 0661 23 45 67</div></div><span class="badge badge-new" data-t="badge_new">Nouveau</span></div>
+          <div class="req-drugs"><span class="drug-tag">🔬 NFS — Bilan sanguin complet</span><span class="drug-tag" style="background:#FEF0ED;color:#E5533D">⚡ Urgent (24h)</span></div>
+          <div class="req-meta">Allergies: Pénicilline · Poids: 72kg · Assurance: CNSS</div>
+          <div class="req-actions">
+            <button class="btn-sm btn-sm-confirm" onclick="confirmLaboReq(this)">✓ <span data-t="confirm_dispo">Confirmer</span></button>
+            <button class="btn-sm" onclick="proposeRdv(this)">📅 <span data-t="propose_rdv">Proposer RDV</span></button>
+            <button class="btn-sm btn-sm-reject" onclick="rejectLaboReq(this)">✕ <span data-t="reject">Refuser</span></button>
+          </div>
+        </div>
+        <div class="req-card">
+          <div class="req-card-header"><div><div class="req-patient">Fatima Zahra Idrissi</div><div class="req-meta">Dr. Sara Bennis · Médecin Général · Guéliz · il y a 2h · 📱 0662 34 56 78</div></div><span class="badge badge-pending" data-t="badge_pending">En attente</span></div>
+          <div class="req-drugs"><span class="drug-tag">🔬 Glycémie à jeun</span><span class="drug-tag">🔬 HbA1c</span><span class="drug-tag" style="background:#EAFAF1;color:#1a7a45">Normal</span></div>
+          <div class="req-meta">Diabète type 2 · Âge: 52 ans · Assurance: CNOPS</div>
+          <div class="req-actions">
+            <button class="btn-sm btn-sm-confirm" onclick="confirmLaboReq(this)">✓ <span data-t="confirm_dispo">Confirmer</span></button>
+            <button class="btn-sm" onclick="proposeRdv(this)">📅 <span data-t="propose_rdv">RDV</span></button>
+            <button class="btn-sm btn-sm-reject" onclick="rejectLaboReq(this)">✕ <span data-t="reject">Refuser</span></button>
+          </div>
+        </div>
+        <div class="req-card">
+          <div class="req-card-header"><div><div class="req-patient">Ahmed Tazi</div><div class="req-meta">Dr. Nour Dentiste · Dentiste · Hivernage · il y a 3h · 📱 0663 45 67 89</div></div><span class="badge badge-new">Nouveau</span></div>
+          <div class="req-drugs"><span class="drug-tag">🦷 Panoramique dentaire</span><span class="drug-tag">🦷 Rétroalvéolaire dent 36</span><span class="drug-tag" style="background:#EAFAF1;color:#1a7a45">Normal</span></div>
+          <div class="req-actions">
+            <button class="btn-sm btn-sm-confirm" onclick="confirmLaboReq(this)">✓ Confirmer</button>
+            <button class="btn-sm" onclick="proposeRdv(this)">📅 RDV</button>
+            <button class="btn-sm btn-sm-reject" onclick="rejectLaboReq(this)">✕ Refuser</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">🗓️</div><div><h2 data-t="labo_slots_title">Créneaux disponibles</h2></div></div>
+      <div class="card-body"><div style="display:flex;flex-wrap:wrap;gap:7px">
+        <span style="padding:5px 12px;border-radius:20px;background:#EAFAF1;color:#1a7a45;font-size:12px;font-weight:500;border:1px solid #C0DD97">Lun 08:00–12:00</span>
+        <span style="padding:5px 12px;border-radius:20px;background:#EAFAF1;color:#1a7a45;font-size:12px;font-weight:500;border:1px solid #C0DD97">Lun 14:00–17:00</span>
+        <span style="padding:5px 12px;border-radius:20px;background:#EAFAF1;color:#1a7a45;font-size:12px;font-weight:500;border:1px solid #C0DD97">Mar 08:00–12:00</span>
+        <span style="padding:5px 12px;border-radius:20px;background:#FEF7EC;color:#7a4e00;font-size:12px;font-weight:500;border:1px solid #F5D28A">Mar 14:00 ⚡ Complet</span>
+        <span style="padding:5px 12px;border-radius:20px;background:#EAFAF1;color:#1a7a45;font-size:12px;font-weight:500;border:1px solid #C0DD97">Mer 08:00–12:00</span>
+        <span style="padding:5px 12px;border-radius:20px;background:#EAFAF1;color:#1a7a45;font-size:12px;font-weight:500;border:1px solid #C0DD97">Jeu 08:00–13:00</span>
+        <span style="padding:5px 12px;border-radius:20px;background:#EAFAF1;color:#1a7a45;font-size:12px;font-weight:500;border:1px solid #C0DD97">Ven 08:30–11:30</span>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ PAGE PHARMACIE ══════════════════ -->
+  <div id="page-pharmacie" class="page">
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">📋</div><div><h2 data-t="pharma_orders_title">Ordonnances reçues</h2></div></div>
+      <div class="card-body">
+        <div class="req-card">
+          <div class="req-card-header"><div><div class="req-patient">Youssef Benali</div><div class="req-meta">Dr. Karim Alaoui · Cardiologue · Marrakech · il y a 8 min · 📱 0661 23 45 67</div></div><span class="badge badge-new" data-t="badge_new">Nouveau</span></div>
+          <div class="req-drugs">
+            <span class="drug-tag">💊 Amoxicilline 500mg × 2/j × 7j — Après les repas</span>
+            <span class="drug-tag">💊 Ibuprofène 400mg × 3/j × 5j — Avec un grand verre d'eau</span>
+            <span class="drug-tag">💊 Oméprazole 20mg × 1/j × 14j — À jeun le matin</span>
+          </div>
+          <div class="req-meta">Assurance: CNSS-123456 · Allergies: Pénicilline ⚠️ · Paiement: CMI</div>
+          <div class="req-actions">
+            <button class="btn-sm btn-sm-confirm" onclick="confirmPharmaReq(this)">✓ <span data-t="confirm_stock">En stock</span></button>
+            <button class="btn-sm" onclick="setPharmaPrice(this)">💰 <span data-t="set_price">Prix</span></button>
+            <button class="btn-sm btn-sm-reject" onclick="rejectPharmaReq(this)">✕ <span data-t="manquant">Manquant</span></button>
+          </div>
+        </div>
+        <div class="req-card">
+          <div class="req-card-header"><div><div class="req-patient">Ahmed Tazi</div><div class="req-meta">Dr. Nour Dentiste · Dentisterie · Dent 36 · il y a 1h · 📱 0663 45 67 89</div></div><span class="badge badge-pending">En attente</span></div>
+          <div class="req-drugs">
+            <span class="drug-tag">💊 Amoxicilline 1g (dentaire) × 3/j × 7j — Après les repas</span>
+            <span class="drug-tag">💊 Ibuprofène 400mg post-op × 3/j × 5j</span>
+            <span class="drug-tag">💊 Chlorhexidine 0.12% rinçage × 3/j × 10j</span>
+          </div>
+          <div class="req-meta">Assurance: CNOPS · Spécialité: Dentisterie · Soin: Extraction chirurgicale</div>
+          <div class="req-actions">
+            <button class="btn-sm btn-sm-confirm" onclick="confirmPharmaReq(this)">✓ En stock</button>
+            <button class="btn-sm" onclick="setPharmaPrice(this)">💰 Prix</button>
+            <button class="btn-sm btn-sm-reject" onclick="rejectPharmaReq(this)">✕ Manquant</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">📦</div><div><h2 data-t="pharma_stock_title">Gestion du stock</h2></div></div>
+      <div class="card-body">
+        <div style="overflow-x:auto;margin-bottom:14px">
+          <table class="stock-table">
+            <thead><tr><th>Médicament</th><th>Quantité</th><th>Stock</th><th>Statut</th></tr></thead>
+            <tbody>
+              <tr><td>Amoxicilline 500mg</td><td>145</td><td><div class="stock-level"><div class="stock-bar"><div class="stock-fill" style="width:90%;background:var(--success)"></div></div></div></td><td><span class="badge badge-done" style="font-size:10px">✓ Disponible</span></td></tr>
+              <tr><td>Ibuprofène 400mg</td><td>78</td><td><div class="stock-level"><div class="stock-bar"><div class="stock-fill" style="width:55%;background:var(--warning)"></div></div></div></td><td><span class="badge badge-pending" style="font-size:10px">⚠ Moyen</span></td></tr>
+              <tr><td>Metformine 1000mg</td><td>12</td><td><div class="stock-level"><div class="stock-bar"><div class="stock-fill" style="width:12%;background:var(--danger)"></div></div></div></td><td><span class="badge badge-urgent" style="font-size:10px">! Stock bas</span></td></tr>
+              <tr><td>Chlorhexidine 0.12%</td><td>34</td><td><div class="stock-level"><div class="stock-bar"><div class="stock-fill" style="width:40%;background:var(--warning)"></div></div></div></td><td><span class="badge badge-pending" style="font-size:10px">⚠ Moyen</span></td></tr>
+              <tr><td>Oméprazole 20mg</td><td>200</td><td><div class="stock-level"><div class="stock-bar"><div class="stock-fill" style="width:100%;background:var(--success)"></div></div></div></td><td><span class="badge badge-done" style="font-size:10px">✓ Disponible</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <hr class="divider">
+        <div class="form-grid-2">
+          <div class="form-group"><label>Médicament</label><input type="text" id="stock-med" placeholder="Ex: Amoxicilline 500mg"></div>
+          <div class="form-group"><label>Quantité</label><input type="number" id="stock-qty" placeholder="200" min="0"></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="updateStock()">🔄 <span data-t="update_stock">Mettre à jour le stock</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- PREVIEW MODAL -->
+<div id="preview-modal" class="preview-modal hidden">
+  <div class="preview-box">
+    <div class="preview-header">
+      <div><div class="preview-title" data-t="ordo_title">ORDONNANCE MÉDICALE</div><div class="preview-sub" id="preview-modal-title">Aperçu</div></div>
+      <button class="preview-close" onclick="closePreview()">✕</button>
+    </div>
+    <div class="preview-body" id="preview-body"></div>
+    <div class="preview-footer">
+      <button class="btn btn-ghost" onclick="closePreview()" style="padding:7px 14px;font-size:12px" data-t="cancel">Annuler</button>
+      <button class="btn btn-outline" onclick="window.print()" style="padding:7px 14px;font-size:12px">🖨 <span data-t="print">Imprimer</span></button>
+      <button class="btn btn-wa" onclick="sendOrdoFinal()" style="padding:7px 14px;font-size:12px">💬 <span data-t="send">Envoyer + WhatsApp</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  // Make ins-status always visible
+  window.addEventListener('DOMContentLoaded', () => {
+    const s = document.getElementById('ins-status');
+    if (s) s.removeAttribute('style');
+  });
+</script>
+<script src="js/translations.js"></script>
+<script src="js/app.js"></script>
+<script src="js/api-client.js"></script>
+
+<!-- ── VITA TECH FOOTER ── -->
+<footer style="background:#063D55;color:rgba(255,255,255,.55);text-align:center;padding:18px 24px;font-size:11px;border-top:2px solid #00C9A7;margin-top:0">
+  <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:16px">🏥</span>
+    <span><strong style="color:#00C9A7">SantéConnect v3</strong> — Plateforme médicale connectée</span>
+    <span style="color:#00C9A7">|</span>
+    <span>Powered by <strong style="color:#fff">Vita Tech</strong></span>
+    <span style="color:#00C9A7">|</span>
+    <a href="https://vita-core.org" style="color:#00C9A7;text-decoration:none;font-weight:600">vita-core.org</a>
+    <span style="color:#00C9A7">|</span>
+    <span>🇲🇦 Maroc — Conformité CNDP Loi 09-08</span>
+  </div>
+  <div style="margin-top:6px;font-size:10px">
+    &copy; 2025 Vita Tech — Tous droits réservés &nbsp;|&nbsp; SantéConnect est une marque de Vita Tech
+  </div>
+</footer>
+
+</body>
+</html>

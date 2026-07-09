@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-:root{--primary:#0A5C7F;--primary-light:#1A8CB5;--primary-dark:#063D55;--accent:#00C9A7;--accent-light:#E1F5EE;--danger:#E5533D;--danger-light:#FEF0ED;--warning:#F5A623;--warning-light:#FEF7EC;--success:#2ECC71;--success-light:#EAFAF1;--surface:#FFFFFF;--surface-2:#F7F9FC;--surface-3:#EEF2F7;--border:#DDE3EE;--border-strong:#C4CEDE;--text:#0F1A2E;--text-2:#4A5568;--text-3:#8A98AD;--wa-green:#25D366;--wa-dark:#075E54;--shadow-sm:0 1px 3px rgba(10,92,127,.08);--shadow:0 4px 16px rgba(10,92,127,.10);--shadow-lg:0 12px 40px rgba(10,92,127,.14);--radius:10px;--radius-lg:16px}
+:root{--primary:#0A5C7F;--primary-light:#1A8CB5;--primary-dark:#063D55;--accent:#00C9A7;--accent-light:#E1F5EE;--danger:#E5533D;--danger-light:#FEF0ED;--warning:#F5A623;--warning-light:#FEF7EC;--success:#2ECC71;--success-light:#EAFAF1;--surface:#FFFFFF;--surface-2:#F7F9FC;--surface-3:#EEF2F7;--border:#DDE3EE;--border-strong:#C4CEDE;--text:#0F1A2E;--text-2:#4A5568;--text-3:#8A98AD;--wa-green:#25D366;--wa-dark:#075E54;--shadow-sm:0 1px 3px rgba(10,92,127,.08);--shadow:0 4px 16px rgba(10,92,127,.10);--shadow-lg:0 12px 40px rgba(10,92,127,.14);--radius:10px;--radius-lg:16px;--role-medecin:#2979FF;--role-patient:#00C9A7;--role-labo:#8B5CF6;--role-pharmacie:#F5A623}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Sora',sans-serif;background:var(--surface-2);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
 body[dir="rtl"]{font-family:'IBM Plex Sans Arabic','Sora',sans-serif}
@@ -23,16 +23,46 @@ body[dir="rtl"]{font-family:'IBM Plex Sans Arabic','Sora',sans-serif}
 /* LAYOUT */
 .container{max-width:980px;margin:0 auto;padding:24px 20px 60px}
 .page{display:none}.page.active{display:block}
-.role-header{text-align:center;margin-bottom:28px;padding-top:8px}
-.role-header h1{font-size:26px;font-weight:700;color:var(--primary-dark);margin-bottom:6px}
-.role-header p{color:var(--text-2);font-size:15px}
-.role-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:900px;margin:0 auto 8px}
-.role-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:20px 14px;text-align:center;cursor:pointer;transition:all .2s;box-shadow:var(--shadow-sm)}
-.role-card:hover{border-color:var(--primary-light);box-shadow:var(--shadow);transform:translateY(-2px)}
-.role-card.active{border-color:var(--accent);background:var(--accent-light)}
-.role-icon{font-size:30px;margin-bottom:8px}
-.role-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px}
-.role-desc{font-size:10px;color:var(--text-3)}
+
+/* HERO BAND — premium wrapper around role selector */
+.hero-band{position:relative;border-radius:24px;padding:36px 24px 30px;margin-bottom:26px;overflow:hidden;
+  background:radial-gradient(ellipse at 20% 0%,rgba(0,201,167,.16) 0%,transparent 55%),
+             radial-gradient(ellipse at 85% 100%,rgba(10,92,127,.14) 0%,transparent 55%),
+             linear-gradient(160deg,var(--primary-dark) 0%,#0A3A52 55%,var(--primary-dark) 100%);
+  box-shadow:var(--shadow-lg)}
+.hero-band::before{content:'';position:absolute;inset:0;opacity:.05;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px);
+  background-size:34px 34px}
+.role-header{position:relative;text-align:center;margin-bottom:26px}
+.role-header .eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(0,201,167,.16);border:1px solid rgba(0,201,167,.35);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 13px;border-radius:20px;margin-bottom:14px}
+.role-header .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulseDot 1.6s infinite}
+.role-header h1{font-size:30px;font-weight:700;color:#fff;margin-bottom:8px}
+.role-header p{color:rgba(255,255,255,.65);font-size:15px}
+.role-grid{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:900px;margin:0 auto 22px}
+.role-card{position:relative;background:rgba(255,255,255,.97);border:1.5px solid transparent;border-radius:var(--radius-lg);padding:22px 14px;text-align:center;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.18);
+  opacity:0;transform:translateY(22px) scale(.96);animation:roleCardIn .55s cubic-bezier(.22,1,.36,1) forwards;
+  transition:box-shadow .25s,border-color .25s;will-change:transform}
+.role-card:nth-child(1){animation-delay:.05s;--rc:var(--role-medecin)}
+.role-card:nth-child(2){animation-delay:.13s;--rc:var(--role-patient)}
+.role-card:nth-child(3){animation-delay:.21s;--rc:var(--role-labo)}
+.role-card:nth-child(4){animation-delay:.29s;--rc:var(--role-pharmacie)}
+.role-card:hover{border-color:var(--rc);box-shadow:0 16px 40px rgba(0,0,0,.24)}
+.role-card.active{border-color:var(--rc);background:linear-gradient(180deg,#fff 0%,color-mix(in srgb,var(--rc) 8%,#fff) 100%)}
+.role-icon{width:52px;height:52px;margin:0 auto 10px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;
+  background:color-mix(in srgb,var(--rc) 14%,transparent);border:1px solid color-mix(in srgb,var(--rc) 30%,transparent)}
+.role-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.role-desc{font-size:10.5px;color:var(--text-3)}
+@keyframes roleCardIn{to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* STATS STRIP */
+.stats-strip{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:900px;margin:0 auto}
+.stat-chip{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 10px;text-align:center;
+  opacity:0;animation:roleCardIn .5s cubic-bezier(.22,1,.36,1) forwards}
+.stat-chip:nth-child(1){animation-delay:.38s}.stat-chip:nth-child(2){animation-delay:.44s}
+.stat-chip:nth-child(3){animation-delay:.50s}.stat-chip:nth-child(4){animation-delay:.56s}
+.stat-chip .stat-value{font-size:20px;font-weight:800;color:var(--accent);font-family:'JetBrains Mono',monospace;line-height:1}
+.stat-chip .stat-label{font-size:10px;color:rgba(255,255,255,.6);margin-top:5px}
 /* SPECIALTY */
 .specialty-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
 .spec-card{padding:10px 6px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--surface);cursor:pointer;text-align:center;transition:all .15s}
@@ -259,6 +289,6 @@ canvas#sigCanvas{width:100%;height:100px;border:1.5px dashed var(--border-strong
 /* DIVIDER / MISC */
 .divider{border:none;border-top:1px solid var(--border);margin:16px 0}
 /* RESPONSIVE */
-@media(max-width:768px){.role-grid{grid-template-columns:repeat(2,1fr)}.specialty-grid{grid-template-columns:repeat(3,1fr)}.payment-methods{grid-template-columns:repeat(3,1fr)}.insurance-grid{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr 1fr}.migration-phases{grid-template-columns:1fr}}
-@media(max-width:480px){.role-grid{grid-template-columns:1fr 1fr}.specialty-grid{grid-template-columns:repeat(2,1fr)}.payment-methods{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}.nav{padding:0 14px}}
-@media print{.nav,.update-banner,.role-grid,.form-actions,button,.wa-config-card,.payment-section,.insurance-section,.migration-section,.updates-section{display:none!important}.card{box-shadow:none;border:none}body{background:white}}
+@media(max-width:768px){.role-grid{grid-template-columns:repeat(2,1fr)}.stats-strip{grid-template-columns:repeat(2,1fr)}.specialty-grid{grid-template-columns:repeat(3,1fr)}.payment-methods{grid-template-columns:repeat(3,1fr)}.insurance-grid{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr 1fr}.migration-phases{grid-template-columns:1fr}}
+@media(max-width:480px){.role-grid{grid-template-columns:1fr 1fr}.stats-strip{grid-template-columns:1fr 1fr}.specialty-grid{grid-template-columns:repeat(2,1fr)}.payment-methods{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}.nav{padding:0 14px}}
+@media print{.nav,.update-banner,.hero-band,.form-actions,button,.wa-config-card,.payment-section,.insurance-section,.migration-section,.updates-section{display:none!important}.card{box-shadow:none;border:none}body{background:white}}

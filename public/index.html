@@ -45,31 +45,40 @@
 
 <div class="container">
 
-  <!-- ── ROLE SELECTOR ── -->
-  <div class="role-header">
-    <h1 data-t="choose_role">Choisissez votre rôle</h1>
-    <p data-t="choose_role_sub">Accédez à votre espace personnalisé</p>
-  </div>
-  <div class="role-grid">
-    <div class="role-card" data-role="medecin" onclick="setRole('medecin')">
-      <div class="role-icon">🩺</div>
-      <div class="role-title" data-t="role_medecin">Médecin</div>
-      <div class="role-desc" data-t="role_medecin_sub">Ordonnances & analyses</div>
+  <!-- ── ROLE SELECTOR (hero band) ── -->
+  <div class="hero-band">
+    <div class="role-header">
+      <span class="eyebrow"><span class="dot"></span> Plateforme medicale connectee — Maroc</span>
+      <h1 data-t="choose_role">Choisissez votre rôle</h1>
+      <p data-t="choose_role_sub">Accédez à votre espace personnalisé</p>
     </div>
-    <div class="role-card" data-role="patient" onclick="setRole('patient')">
-      <div class="role-icon">🧑‍⚕️</div>
-      <div class="role-title" data-t="role_patient">Patient</div>
-      <div class="role-desc" data-t="role_patient_sub">Suivi & notifications</div>
+    <div class="role-grid">
+      <div class="role-card" data-role="medecin" onclick="setRole('medecin')">
+        <div class="role-icon">🩺</div>
+        <div class="role-title" data-t="role_medecin">Médecin</div>
+        <div class="role-desc" data-t="role_medecin_sub">Ordonnances & analyses</div>
+      </div>
+      <div class="role-card" data-role="patient" onclick="setRole('patient')">
+        <div class="role-icon">🧑‍⚕️</div>
+        <div class="role-title" data-t="role_patient">Patient</div>
+        <div class="role-desc" data-t="role_patient_sub">Suivi & notifications</div>
+      </div>
+      <div class="role-card" data-role="labo" onclick="setRole('labo')">
+        <div class="role-icon">🔬</div>
+        <div class="role-title" data-t="role_labo">Laboratoire</div>
+        <div class="role-desc" data-t="role_labo_sub">Demandes d'analyses</div>
+      </div>
+      <div class="role-card" data-role="pharmacie" onclick="setRole('pharmacie')">
+        <div class="role-icon">💊</div>
+        <div class="role-title" data-t="role_pharmacie">Pharmacie</div>
+        <div class="role-desc" data-t="role_pharmacie_sub">Stock & ordonnances</div>
+      </div>
     </div>
-    <div class="role-card" data-role="labo" onclick="setRole('labo')">
-      <div class="role-icon">🔬</div>
-      <div class="role-title" data-t="role_labo">Laboratoire</div>
-      <div class="role-desc" data-t="role_labo_sub">Demandes d'analyses</div>
-    </div>
-    <div class="role-card" data-role="pharmacie" onclick="setRole('pharmacie')">
-      <div class="role-icon">💊</div>
-      <div class="role-title" data-t="role_pharmacie">Pharmacie</div>
-      <div class="role-desc" data-t="role_pharmacie_sub">Stock & ordonnances</div>
+    <div class="stats-strip">
+      <div class="stat-chip"><div class="stat-value">15</div><div class="stat-label">Spécialités médicales</div></div>
+      <div class="stat-chip"><div class="stat-value">6</div><div class="stat-label">Méthodes de paiement</div></div>
+      <div class="stat-chip"><div class="stat-value">12</div><div class="stat-label">Assurances connectées</div></div>
+      <div class="stat-chip"><div class="stat-value">FR/AR/EN</div><div class="stat-label">Trilingue natif</div></div>
     </div>
   </div>
 

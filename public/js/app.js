@@ -720,6 +720,37 @@ function dismissBanner() {
   if (b) b.style.display = 'none';
 }
 
+// ── ROLE CARD TILT (mouse-follow 3D effect) ────────────────────
+function initRoleCardTilt() {
+  document.querySelectorAll('.role-card').forEach(card => {
+    card.style.transformStyle = 'preserve-3d';
+    card.style.perspective = '600px';
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      card.style.transform = `translateY(-4px) rotateX(${py * -10}deg) rotateY(${px * 10}deg) scale(1.02)`;
+    });
+    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+  });
+}
+
+// ── STATS COUNT-UP ──────────────────────────────────────────────
+function initStatsCountUp() {
+  document.querySelectorAll('.stat-chip .stat-value').forEach(el => {
+    const target = parseInt(el.textContent, 10);
+    if (isNaN(target)) return;
+    const dur = 1100;
+    const t0 = performance.now();
+    function tick(now) {
+      const p = Math.min((now - t0) / dur, 1);
+      el.textContent = Math.round((1 - Math.pow(1 - p, 3)) * target);
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
 // ── INIT ──────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   applyTranslations();
@@ -727,4 +758,6 @@ window.addEventListener('DOMContentLoaded', () => {
   rebuildRegionSelect();
   rebuildInsuranceGrid();
   rebuildInsuranceCoverage();
+  initRoleCardTilt();
+  initStatsCountUp();
 });

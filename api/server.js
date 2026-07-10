@@ -9,6 +9,11 @@ const path     = require('path');
 const crypto   = require('crypto');
 const { supabase } = require('../lib/supabase');
 const wa = require('../lib/whatsapp');
+const { isEmailRequiredForRole, hashPassword, comparePassword, signToken, requireAuth, requireRole } = require('../lib/auth');
+
+// Reserved username that is always granted the super_admin role on registration.
+const SUPERADMIN_USERNAME = process.env.SUPERADMIN_USERNAME || 'superadmin';
+const PUBLIC_ROLES = ['medecin', 'patient', 'labo', 'pharmacie', 'assurance'];
 
 const app = express();
 
@@ -367,6 +372,148 @@ app.get('/api/ordonnances', async (req, res) => {
   if (labo_id) q = q.eq('labo_id', labo_id);
   if (statut) q = q.eq('statut', statut);
   const { data, error } = await q;
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// ── AUTH: REGISTER ────────────────────────────────────────────
+app.post('/api/auth/register', async (req, res) => {
+  const { username, password, role, email, nom, prenom, telephone, profile } = req.body;
+
+  if (!username || !password || !role) {
+    return res.status(400).json({ error: 'Nom d\'utilisateur, mot de passe et rôle sont requis.' });
+  }
+  if (!PUBLIC_ROLES.includes(role)) {
+    return res.status(400).json({ error: 'Rôle invalide.' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Mot de passe minimum 6 caractères.' });
+  }
+  if (isEmailRequiredForRole(role) && !email) {
+    return res.status(400).json({ error: 'L\'email est obligatoire pour ce type de compte.' });
+  }
+
+  try {
+    const { data: existing } = await supabase.from('users').select('id').eq('username', username).maybeSingle();
+    if (existing) return res.status(409).json({ error: 'Ce nom d\'utilisateur est déjà pris.' });
+
+    const effectiveRole = username === SUPERADMIN_USERNAME ? 'super_admin' : role;
+    const password_hash = await hashPassword(password);
+
+    // Create the linked professional profile row when applicable (medecin/labo/pharmacie/assurance).
+    let profileId = null;
+    if (effectiveRole === 'medecin' && profile) {
+      const { data: p } = await supabase.from('medecins').insert([{
+        nom: profile.nom || nom, prenom: profile.prenom || prenom, titre: profile.titre || 'generaliste',
+        cabinet: profile.cabinet || '', ville: profile.ville || '', telephone: telephone || '',
+        email: email || null,
+      }]).select().single();
+      profileId = p?.id || null;
+    } else if (effectiveRole === 'labo' && profile) {
+      const { data: p } = await supabase.from('laboratoires').insert([{
+        nom: profile.nom || nom, adresse: profile.adresse || null, ville: profile.ville || null, telephone: telephone || null,
+      }]).select().single();
+      profileId = p?.id || null;
+    } else if (effectiveRole === 'pharmacie' && profile) {
+      const { data: p } = await supabase.from('pharmacies').insert([{
+        nom: profile.nom || nom, adresse: profile.adresse || null, ville: profile.ville || null, telephone: telephone || null,
+      }]).select().single();
+      profileId = p?.id || null;
+    } else if (effectiveRole === 'assurance' && profile) {
+      const { data: p } = await supabase.from('assurances').insert([{
+        nom: profile.nom || nom, adresse: profile.adresse || null, ville: profile.ville || null, telephone: telephone || null,
+      }]).select().single();
+      profileId = p?.id || null;
+    }
+
+    const { data: user, error } = await supabase.from('users').insert([{
+      username, email: email || null, password_hash,
+      role: effectiveRole, nom: nom || null, prenom: prenom || null,
+      telephone: telephone || null, profile_id: profileId,
+    }]).select('id, username, email, role, nom, prenom, telephone').single();
+    if (error) throw error;
+
+    const token = signToken(user);
+    res.status(201).json({ token, user });
+  } catch (err) {
+    console.error('[POST /api/auth/register]', err.message);
+    res.status(500).json({ error: 'Erreur lors de la création du compte.' });
+  }
+});
+
+// ── AUTH: LOGIN ───────────────────────────────────────────────
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: 'Identifiants requis.' });
+
+  try {
+    const { data: user } = await supabase.from('users').select('*').eq('username', username).maybeSingle();
+    if (!user || !user.is_active) return res.status(401).json({ error: 'Identifiants invalides.' });
+
+    const ok = await comparePassword(password, user.password_hash);
+    if (!ok) return res.status(401).json({ error: 'Identifiants invalides.' });
+
+    const publicUser = { id: user.id, username: user.username, email: user.email, role: user.role, nom: user.nom, prenom: user.prenom, telephone: user.telephone };
+    const token = signToken(publicUser);
+    res.json({ token, user: publicUser });
+  } catch (err) {
+    console.error('[POST /api/auth/login]', err.message);
+    res.status(500).json({ error: 'Erreur de connexion.' });
+  }
+});
+
+// ── AUTH: ME ──────────────────────────────────────────────────
+app.get('/api/auth/me', requireAuth, async (req, res) => {
+  const { data: user, error } = await supabase.from('users')
+    .select('id, username, email, role, nom, prenom, telephone').eq('id', req.user.sub).maybeSingle();
+  if (error || !user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
+  res.json({ user });
+});
+
+// ── ASSURANCE QUEUE (role: assurance / super_admin) ───────────
+app.get('/api/assurances/queue', requireAuth, requireRole('assurance', 'super_admin'), async (req, res) => {
+  const { data, error } = await supabase.from('assurance_queue')
+    .select('*, patients(nom, prenom, telephone)').order('created_at', { ascending: false }).limit(50);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// ── ADMIN: PERMISSIONS MATRIX (Super Admin) ──────────────────
+app.get('/api/admin/permissions', requireAuth, requireRole('super_admin'), async (req, res) => {
+  const { data, error } = await supabase.from('role_permissions').select('*').order('role');
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.put('/api/admin/permissions/:role', requireAuth, requireRole('super_admin'), async (req, res) => {
+  const { role } = req.params;
+  const allowed = ['can_view_ordonnances', 'can_view_patients', 'can_view_pharmacies', 'can_view_laboratoires', 'can_view_assurances', 'can_view_transactions', 'can_manage_users'];
+  const updates = {};
+  for (const key of allowed) if (key in req.body) updates[key] = !!req.body[key];
+  updates.updated_at = new Date().toISOString();
+
+  const { data, error } = await supabase.from('role_permissions').update(updates).eq('role', role).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// ── ADMIN: USER LIST (Super Admin) ────────────────────────────
+app.get('/api/admin/users', requireAuth, requireRole('super_admin'), async (req, res) => {
+  const { data, error } = await supabase.from('users')
+    .select('id, username, email, role, nom, prenom, telephone, is_active, created_at')
+    .order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.put('/api/admin/users/:id', requireAuth, requireRole('super_admin'), async (req, res) => {
+  const { role, is_active } = req.body;
+  const updates = {};
+  if (role && PUBLIC_ROLES.includes(role)) updates.role = role;
+  if (typeof is_active === 'boolean') updates.is_active = is_active;
+
+  const { data, error } = await supabase.from('users').update(updates).eq('id', req.params.id)
+    .select('id, username, email, role, is_active').single();
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });

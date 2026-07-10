@@ -35,6 +35,8 @@
   </a>
   <div class="nav-right">
     <span class="version-badge">v3.0</span>
+    <span class="nav-username hidden" id="nav-username"></span>
+    <button class="nav-logout hidden" id="nav-logout" onclick="logout()">Déconnexion</button>
     <div class="nav-lang">
       <button class="lang-btn active" id="lang-fr" onclick="setLang('fr')">🇫🇷 FR</button>
       <button class="lang-btn" id="lang-ar" onclick="setLang('ar')">🇲🇦 ع</button>
@@ -43,7 +45,55 @@
   </div>
 </nav>
 
-<div class="container">
+<!-- ── AUTH OVERLAY ── -->
+<div id="auth-overlay" class="auth-overlay hidden">
+  <div class="auth-box">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login-btn" onclick="switchAuthTab('login')">Connexion</button>
+      <button class="auth-tab" id="tab-register-btn" onclick="switchAuthTab('register')">Inscription</button>
+    </div>
+
+    <form id="login-form" class="auth-form">
+      <div class="form-group"><label>Nom d'utilisateur</label><input name="username" required></div>
+      <div class="form-group"><label>Mot de passe</label><input type="password" name="password" required></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Se connecter</button>
+    </form>
+
+    <form id="register-form" class="auth-form hidden">
+      <div class="form-group">
+        <label>Je suis un(e)</label>
+        <div class="auth-role-grid">
+          <label class="auth-role-opt"><input type="radio" name="role" value="medecin" checked> 🩺 Médecin</label>
+          <label class="auth-role-opt"><input type="radio" name="role" value="patient"> 🧑‍⚕️ Patient</label>
+          <label class="auth-role-opt"><input type="radio" name="role" value="labo"> 🔬 Laboratoire</label>
+          <label class="auth-role-opt"><input type="radio" name="role" value="pharmacie"> 💊 Pharmacie</label>
+          <label class="auth-role-opt"><input type="radio" name="role" value="assurance"> 🏛 Assurance</label>
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label>Nom d'utilisateur</label><input name="username" required></div>
+        <div class="form-group"><label>Mot de passe</label><input type="password" name="password" required minlength="6"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label>Nom</label><input name="nom"></div>
+        <div class="form-group"><label>Prénom</label><input name="prenom"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label id="reg-email-label">Email (facultatif)</label><input type="email" name="email" id="reg-email"></div>
+        <div class="form-group"><label>Téléphone</label><input type="tel" name="telephone"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label>Établissement / Cabinet</label><input name="profile_nom"></div>
+        <div class="form-group"><label>Ville</label><input name="profile_ville"></div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Créer mon compte</button>
+    </form>
+
+    <div id="auth-error" class="auth-error"></div>
+  </div>
+</div>
+
+<div class="container" id="app-root">
 
   <!-- ── ROLE SELECTOR (hero band) ── -->
   <div class="hero-band">
@@ -72,6 +122,16 @@
         <div class="role-icon">💊</div>
         <div class="role-title" data-t="role_pharmacie">Pharmacie</div>
         <div class="role-desc" data-t="role_pharmacie_sub">Stock & ordonnances</div>
+      </div>
+      <div class="role-card" data-role="assurance" onclick="setRole('assurance'); loadAssuranceQueue()">
+        <div class="role-icon">🏛</div>
+        <div class="role-title">Assurance</div>
+        <div class="role-desc">Vérification des couvertures</div>
+      </div>
+      <div class="role-card" data-role="superadmin" style="display:none" onclick="setRole('superadmin')">
+        <div class="role-icon">🛡</div>
+        <div class="role-title">Super Admin</div>
+        <div class="role-desc">Droits & utilisateurs</div>
       </div>
     </div>
   </div>
@@ -638,6 +698,34 @@
     </div>
   </div>
 
+  <!-- ══════════════════ PAGE ASSURANCE ══════════════════ -->
+  <div id="page-assurance" class="page">
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">🏛</div><div><h2>File de vérification des couvertures</h2><p>Demandes en attente de confirmation manuelle</p></div></div>
+      <div class="card-body">
+        <div id="assurance-queue-table">
+          <p style="color:var(--text-2);font-size:13px">Chargement des demandes en attente…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ PAGE SUPER ADMIN ══════════════════ -->
+  <div id="page-superadmin" class="page">
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">🛡</div><div><h2>Onglet des droits</h2><p>Permissions par rôle — cochez pour autoriser l'accès à un module</p></div></div>
+      <div class="card-body">
+        <div id="rights-matrix" style="overflow-x:auto"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-header-icon">👥</div><div><h2>Utilisateurs</h2><p>Comptes enregistrés sur la plateforme</p></div></div>
+      <div class="card-body">
+        <div id="users-table" style="overflow-x:auto"></div>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /container -->
 
 <!-- PREVIEW MODAL -->
@@ -668,6 +756,7 @@
 <script src="js/translations.js"></script>
 <script src="js/app.js"></script>
 <script src="js/api-client.js"></script>
+<script src="js/auth.js"></script>
 
 <!-- ── VITA TECH FOOTER ── -->
 <footer style="background:#063D55;color:rgba(255,255,255,.55);text-align:center;padding:18px 24px;font-size:11px;border-top:2px solid #00C9A7;margin-top:0">

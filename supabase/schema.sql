@@ -70,6 +70,45 @@ CREATE TABLE IF NOT EXISTS laboratoires (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ── ASSURANCES (compte compagnie d'assurance) ─────────────────
+CREATE TABLE IF NOT EXISTS assurances (
+  id        UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  nom       TEXT NOT NULL,
+  adresse   TEXT,
+  ville     TEXT,
+  telephone TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── UTILISATEURS (authentification) ───────────────────────────
+CREATE TABLE IF NOT EXISTS users (
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  username      TEXT UNIQUE NOT NULL,
+  email         TEXT,
+  password_hash TEXT NOT NULL,
+  role          TEXT NOT NULL CHECK (role IN ('medecin','patient','labo','pharmacie','assurance','super_admin')),
+  nom           TEXT,
+  prenom        TEXT,
+  telephone     TEXT,
+  profile_id    UUID,
+  is_active     BOOLEAN DEFAULT TRUE,
+  created_at    TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+
+-- ── PERMISSIONS PAR RÔLE (gérées par le Super Admin) ──────────
+CREATE TABLE IF NOT EXISTS role_permissions (
+  role                    TEXT PRIMARY KEY,
+  can_view_ordonnances    BOOLEAN DEFAULT FALSE,
+  can_view_patients       BOOLEAN DEFAULT FALSE,
+  can_view_pharmacies     BOOLEAN DEFAULT FALSE,
+  can_view_laboratoires   BOOLEAN DEFAULT FALSE,
+  can_view_assurances     BOOLEAN DEFAULT FALSE,
+  can_view_transactions   BOOLEAN DEFAULT FALSE,
+  can_manage_users        BOOLEAN DEFAULT FALSE,
+  updated_at              TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ── ORDONNANCES ───────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS ordonnances (
   id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -224,6 +263,9 @@ ALTER TABLE medecins              ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pharmacies            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE laboratoires          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE assurances            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users                 ENABLE ROW LEVEL SECURITY;
+ALTER TABLE role_permissions      ENABLE ROW LEVEL SECURITY;
 
 -- Politique service role = accès total (backend uniquement)
 DO $$
@@ -231,7 +273,7 @@ DECLARE t TEXT;
 BEGIN
   FOREACH t IN ARRAY ARRAY['ordonnances','patients','medicaments_prescrits','analyses_prescrites',
     'confirmations_pharmacie','confirmations_labo','transactions','notifications_wa','assurance_queue',
-    'medecins','pharmacies','laboratoires','audit_logs']
+    'medecins','pharmacies','laboratoires','audit_logs','assurances','users','role_permissions']
   LOOP
     EXECUTE format('DROP POLICY IF EXISTS service_all ON %I', t);
     EXECUTE format('CREATE POLICY service_all ON %I FOR ALL TO service_role USING (true)', t);
@@ -254,3 +296,13 @@ INSERT INTO laboratoires (nom, adresse, ville, telephone) VALUES
   ('Labo Guéliz',              '23 Rue de Yougoslavie',    'Marrakech', '0524777888'),
   ('Cabinet Radiologie Atlas', 'Av. des FAR',               'Marrakech', '0524999000')
 ON CONFLICT DO NOTHING;
+
+-- ── PERMISSIONS PAR DÉFAUT ─────────────────────────────────────
+INSERT INTO role_permissions (role, can_view_ordonnances, can_view_patients, can_view_pharmacies, can_view_laboratoires, can_view_assurances, can_view_transactions, can_manage_users) VALUES
+  ('medecin',     TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
+  ('patient',     FALSE, TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE),
+  ('labo',        FALSE, FALSE, FALSE, TRUE,  FALSE, FALSE, FALSE),
+  ('pharmacie',   FALSE, FALSE, TRUE,  FALSE, FALSE, FALSE, FALSE),
+  ('assurance',   FALSE, FALSE, FALSE, FALSE, TRUE,  FALSE, FALSE),
+  ('super_admin', TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE)
+ON CONFLICT (role) DO NOTHING;

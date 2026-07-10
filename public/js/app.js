@@ -10,8 +10,8 @@ let sigCanvas, sigCtx, signing = false, hasSig = false;
 // ── LANG ──────────────────────────────────────────────────────
 function setLang(l) {
   currentLang = l;
-  document.documentElement.lang = l;
-  document.body.dir = l === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.lang = l === 'darija' ? 'ar' : l;
+  document.body.dir = (l === 'ar' || l === 'darija') ? 'rtl' : 'ltr';
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('lang-' + l).classList.add('active');
   applyTranslations();

@@ -13,7 +13,7 @@ async function apiAuthFetch(path, options = {}) {
   if (token) headers.Authorization = 'Bearer ' + token;
   const r = await fetch(window.API_BASE + path, Object.assign({}, options, { headers }));
   const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || 'Erreur serveur');
+  if (!r.ok) throw new Error(data.error || t('auth_err_server'));
   return data;
 }
 
@@ -40,7 +40,8 @@ function updateEmailRequirement() {
   const emailLabel = document.getElementById('reg-email-label');
   const required = EMAIL_REQUIRED_ROLES.has(role);
   emailInput.required = required;
-  emailLabel.textContent = 'Email' + (required ? ' *' : ' (facultatif)');
+  emailLabel.setAttribute('data-t', required ? 'auth_email_required' : 'auth_email_optional');
+  emailLabel.textContent = t(required ? 'auth_email_required' : 'auth_email_optional');
 }
 
 async function handleRegister(e) {
@@ -115,9 +116,9 @@ async function loadAssuranceQueue() {
   const el = document.getElementById('assurance-queue-table');
   try {
     const queue = await apiAuthFetch('/assurances/queue');
-    if (!queue.length) { el.innerHTML = '<p style="color:var(--text-2);font-size:13px">Aucune demande en attente.</p>'; return; }
+    if (!queue.length) { el.innerHTML = `<p style="color:var(--text-2);font-size:13px">${t('assurance_no_queue')}</p>`; return; }
     el.innerHTML = `<table class="stock-table"><thead><tr>
-      <th>Patient</th><th>Compagnie</th><th>N° Police</th><th>Statut</th><th>Créée le</th>
+      <th>${t('assurance_col_patient')}</th><th>${t('assurance_col_compagnie')}</th><th>${t('assurance_col_police')}</th><th>${t('assurance_col_statut')}</th><th>${t('assurance_col_date')}</th>
       </tr></thead><tbody>${queue.map(q => `<tr>
         <td>${q.patients ? q.patients.prenom + ' ' + q.patients.nom : '—'}</td>
         <td>${q.compagnie}</td><td>${q.numero_police || '—'}</td><td>${q.statut}</td>
@@ -145,18 +146,18 @@ async function loadSuperAdminPanel() {
   }
 }
 
-const MODULE_LABELS = {
-  can_view_ordonnances: 'Ordonnances',
-  can_view_patients: 'Patients',
-  can_view_pharmacies: 'Pharmacies',
-  can_view_laboratoires: 'Laboratoires',
-  can_view_assurances: 'Assurances',
-  can_view_transactions: 'Transactions',
-  can_manage_users: 'Gestion utilisateurs',
+const MODULE_TRANSLATION_KEYS = {
+  can_view_ordonnances: 'admin_module_ordonnances',
+  can_view_patients: 'admin_module_patients',
+  can_view_pharmacies: 'admin_module_pharmacies',
+  can_view_laboratoires: 'admin_module_laboratoires',
+  can_view_assurances: 'admin_module_assurances',
+  can_view_transactions: 'admin_module_transactions',
+  can_manage_users: 'admin_module_users',
 };
 
 function renderPermissionsMatrix(perms) {
-  const modules = Object.keys(MODULE_LABELS);
+  const modules = Object.keys(MODULE_TRANSLATION_KEYS);
   const rows = perms.map(p => `
     <tr>
       <td style="font-weight:600">${p.role}</td>
@@ -169,7 +170,7 @@ function renderPermissionsMatrix(perms) {
 
   document.getElementById('rights-matrix').innerHTML = `
     <table class="stock-table">
-      <thead><tr><th>Rôle</th>${modules.map(m => `<th>${MODULE_LABELS[m]}</th>`).join('')}</tr></thead>
+      <thead><tr><th>${t('admin_col_role')}</th>${modules.map(m => `<th>${t(MODULE_TRANSLATION_KEYS[m])}</th>`).join('')}</tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
 }
@@ -177,7 +178,7 @@ function renderPermissionsMatrix(perms) {
 async function updatePermission(role, key, value) {
   try {
     await apiAuthFetch('/admin/permissions/' + role, { method: 'PUT', body: JSON.stringify({ [key]: value }) });
-    showToast('✅ Droits mis à jour pour ' + role);
+    showToast('✅ ' + t('admin_rights_updated') + ' ' + role);
   } catch (err) {
     showToast('⚠ ' + err.message, true);
   }
@@ -190,11 +191,11 @@ function renderUsersTable(users) {
       <td>${u.email || '—'}</td>
       <td>${u.role}</td>
       <td>${u.is_active ? '✅' : '❌'}</td>
-      <td><button class="btn-sm" onclick="toggleUserActive('${u.id}', ${!u.is_active})">${u.is_active ? 'Désactiver' : 'Activer'}</button></td>
+      <td><button class="btn-sm" onclick="toggleUserActive('${u.id}', ${!u.is_active})">${u.is_active ? t('admin_deactivate') : t('admin_activate')}</button></td>
     </tr>`).join('');
   document.getElementById('users-table').innerHTML = `
     <table class="stock-table">
-      <thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Actif</th><th></th></tr></thead>
+      <thead><tr><th>${t('admin_col_user')}</th><th>${t('admin_col_email')}</th><th>${t('admin_col_role')}</th><th>${t('admin_col_active')}</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
 }

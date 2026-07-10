@@ -53,10 +53,13 @@ jobs:
         id: version
         run: echo "tag=v$(date +%Y.%m.%d)-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
+      - name: Rename APK to a unique, recognizable filename
+        run: cp android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/SanteConnect.apk
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: SantéConnect ${{ steps.version.outputs.tag }}
-          files: android/app/build/outputs/apk/release/app-release.apk
+          files: android/app/build/outputs/apk/release/SanteConnect.apk
           generate_release_notes: true

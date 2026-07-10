@@ -6,9 +6,19 @@
   "scripts": {
     "start": "node api/server.js",
     "dev": "nodemon api/server.js",
-    "build": "echo 'Static build ready'"
+    "build": "echo 'Static build ready'",
+    "android:add": "npx cap add android",
+    "android:sync": "npx cap sync android",
+    "android:open": "npx cap open android",
+    "ios:add": "npx cap add ios",
+    "ios:sync": "npx cap sync ios",
+    "ios:open": "npx cap open ios"
   },
   "dependencies": {
+    "@capacitor/cli": "latest",
+    "@capacitor/core": "latest",
+    "@capacitor/android": "latest",
+    "@capacitor/ios": "latest",
     "@supabase/supabase-js": "^2.39.0",
     "twilio": "^4.20.0",
     "dotenv": "^16.3.1",

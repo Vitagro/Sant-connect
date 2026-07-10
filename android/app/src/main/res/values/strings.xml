@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SantéConnect</string>
+    <string name="title_activity_main">SantéConnect</string>
+    <string name="package_name">com.vitatech.santeconnect</string>
+    <string name="custom_url_scheme">com.vitatech.santeconnect</string>
+</resources>

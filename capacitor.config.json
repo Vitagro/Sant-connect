@@ -1,0 +1,14 @@
+{
+  "appId": "com.vitatech.santeconnect",
+  "appName": "SantéConnect",
+  "webDir": "public",
+  "server": {
+    "url": "https://sante-connect-xi.vercel.app",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "backgroundColor": "#063D55",
+  "android": {
+    "allowMixedContent": false
+  }
+}

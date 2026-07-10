@@ -1,0 +1,59 @@
+name: Android Release Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Sync Capacitor
+        run: npm run android:sync
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Decode release keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app-release.keystore
+
+      - name: Write keystore.properties
+        run: |
+          cat > android/keystore.properties <<EOF
+          storeFile=app-release.keystore
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyAlias=santeconnect
+          keyPassword=${{ secrets.KEYSTORE_PASSWORD }}
+          EOF
+
+      - name: Build signed release APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Compute version tag
+        id: version
+        run: echo "tag=v$(date +%Y.%m.%d)-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: SantéConnect ${{ steps.version.outputs.tag }}
+          files: android/app/build/outputs/apk/release/app-release.apk
+          generate_release_notes: true

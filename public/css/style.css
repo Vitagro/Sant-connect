@@ -324,3 +324,6 @@ canvas#sigCanvas{width:100%;height:100px;border:1.5px dashed var(--border-strong
 #guest-continue{width:100%;margin-top:12px}
 #guest-root .card-header h1{color:#fff;font-size:1.2rem;margin:0}
 .guest-services{padding-inline-start:1.5rem;margin-block:12px}
+
+.research-entry .card-body .btn{margin-block-start:12px}
+.guest-research{margin-block-start:16px}

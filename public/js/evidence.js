@@ -2,6 +2,38 @@ const form = document.getElementById('evidence-form');
 const statusLine = document.getElementById('evidence-status');
 const results = document.getElementById('evidence-results');
 
+async function showWorkspace() {
+  const access = document.getElementById('evidence-access');
+  const message = document.getElementById('evidence-access-status');
+  const token = localStorage.getItem('sc_token');
+  const signInMessage = 'Connectez-vous à SantéConnect avec un compte médecin.';
+  if (!token) {
+    message.textContent = signInMessage;
+    return;
+  }
+  try {
+    const response = await fetch('/api/auth/me', {
+      headers: { Authorization: 'Bearer ' + token }, cache: 'no-store',
+    });
+    if ([401, 403, 404].includes(response.status)) {
+      message.textContent = signInMessage;
+      return;
+    }
+    if (!response.ok) throw new Error('Session unavailable');
+    const { user } = await response.json();
+    if (user?.role !== 'medecin') {
+      message.textContent = 'Le compte connecté ne donne pas accès à l’espace médecin.';
+      return;
+    }
+    access.hidden = true;
+    document.getElementById('evidence-tools').hidden = false;
+    document.getElementById('evidence-documents').hidden = false;
+  } catch {
+    message.textContent = 'Impossible de vérifier votre session pour le moment. Réessayez dans un instant.';
+  }
+}
+void showWorkspace();
+
 function sourceLink(source, label) {
   const link = document.createElement('a');
   link.href = source.url;
@@ -25,7 +57,8 @@ function render(data) {
   }
   const notes = [];
   if (data.partial) notes.push('Certaines recherches n’ont pas abouti.');
-  if (data.synthesis !== 'reviewed') notes.push('Synthèse indisponible. Consultez les références originales.');
+  if (data.synthesis === 'disabled') notes.push('La synthèse IA pilote est désactivée pour cette session.');
+  if (data.synthesis === 'unavailable') notes.push('Synthèse indisponible. Consultez les références originales.');
   statusLine.textContent = notes.join(' ');
   if (data.claims.length) {
     appendText(results, 'h2', 'Synthèse avec contrôle automatisé');

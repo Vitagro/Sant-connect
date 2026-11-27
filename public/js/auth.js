@@ -199,19 +199,29 @@ async function updatePermission(role, key, value) {
 }
 
 function renderUsersTable(users) {
-  const rows = users.map(u => `
-    <tr>
-      <td>${u.username}</td>
-      <td>${u.email || '—'}</td>
-      <td>${u.role}</td>
-      <td>${u.is_active ? '✅' : '❌'}</td>
-      <td><button class="btn-sm" onclick="toggleUserActive('${u.id}', ${!u.is_active})">${u.is_active ? t('admin_deactivate') : t('admin_activate')}</button></td>
-    </tr>`).join('');
-  document.getElementById('users-table').innerHTML = `
-    <table class="stock-table">
-      <thead><tr><th>${t('admin_col_user')}</th><th>${t('admin_col_email')}</th><th>${t('admin_col_role')}</th><th>${t('admin_col_active')}</th><th></th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+  const table = document.createElement('table');
+  table.className = 'stock-table';
+  const headings = table.createTHead().insertRow();
+  for (const key of ['admin_col_user', 'admin_col_email', 'admin_col_role', 'admin_col_active', null]) {
+    const label = document.createElement('th');
+    label.scope = 'col';
+    label.textContent = key ? t(key) : '';
+    headings.append(label);
+  }
+  const body = table.createTBody();
+  for (const user of users) {
+    const row = body.insertRow();
+    for (const value of [user.username, user.email || '—', user.role, user.is_active ? '✅' : '❌']) {
+      row.insertCell().textContent = value;
+    }
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'btn-sm';
+    toggle.textContent = user.is_active ? t('admin_deactivate') : t('admin_activate');
+    toggle.addEventListener('click', () => toggleUserActive(user.id, !user.is_active));
+    row.insertCell().append(toggle);
+  }
+  document.getElementById('users-table').replaceChildren(table);
 }
 
 async function toggleUserActive(id, is_active) {

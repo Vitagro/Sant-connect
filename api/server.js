@@ -533,13 +533,21 @@ app.get('/api/assurances/queue', requireAuth, requireDatabase, requireRole('assu
 });
 
 // ── ADMIN: PERMISSIONS MATRIX (Super Admin) ──────────────────
-app.get('/api/admin/permissions', requireAuth, requireRole('super_admin'), requireDatabase, async (req, res) => {
+async function requireActiveAdmin(req, res, next) {
+  const { data: account, error } = await supabase.from('users').select('role')
+    .eq('id', req.user.sub).eq('is_active', true).maybeSingle();
+  if (error) return res.status(503).json({ error: 'Administration momentanément indisponible.' });
+  if (account?.role !== 'super_admin') return res.status(403).json({ error: 'Accès refusé.' });
+  next();
+}
+
+app.get('/api/admin/permissions', requireAuth, requireRole('super_admin'), requireDatabase, requireActiveAdmin, async (req, res) => {
   const { data, error } = await supabase.from('role_permissions').select('*').order('role');
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
-app.put('/api/admin/permissions/:role', requireAuth, requireRole('super_admin'), requireDatabase, async (req, res) => {
+app.put('/api/admin/permissions/:role', requireAuth, requireRole('super_admin'), requireDatabase, requireActiveAdmin, async (req, res) => {
   const { role } = req.params;
   const allowed = ['can_view_ordonnances', 'can_view_patients', 'can_view_pharmacies', 'can_view_laboratoires', 'can_view_assurances', 'can_view_transactions', 'can_manage_users'];
   const updates = {};
@@ -552,7 +560,7 @@ app.put('/api/admin/permissions/:role', requireAuth, requireRole('super_admin'),
 });
 
 // ── ADMIN: USER LIST (Super Admin) ────────────────────────────
-app.get('/api/admin/users', requireAuth, requireRole('super_admin'), requireDatabase, async (req, res) => {
+app.get('/api/admin/users', requireAuth, requireRole('super_admin'), requireDatabase, requireActiveAdmin, async (req, res) => {
   const { data, error } = await supabase.from('users')
     .select('id, username, email, role, nom, prenom, telephone, is_active, created_at')
     .order('created_at', { ascending: false });
@@ -560,7 +568,7 @@ app.get('/api/admin/users', requireAuth, requireRole('super_admin'), requireData
   res.json(data);
 });
 
-app.put('/api/admin/users/:id', requireAuth, requireRole('super_admin'), requireDatabase, async (req, res) => {
+app.put('/api/admin/users/:id', requireAuth, requireRole('super_admin'), requireDatabase, requireActiveAdmin, async (req, res) => {
   const { role, is_active } = req.body;
   const updates = {};
   if (role && PUBLIC_ROLES.includes(role)) updates.role = role;

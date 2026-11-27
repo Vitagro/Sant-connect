@@ -1,6 +1,10 @@
 // SantéConnect v3 — Translations FR / AR / EN
 const LANG = {
 fr: {
+  role_assistant: "Assistant(e) médical(e)",
+  role_infirmier: "Infirmier(ère)",
+  role_assistant_sub: "Équipe du cabinet",
+  role_infirmier_sub: "Équipe de soins",
   password_show: "Afficher",
   password_hide: "Masquer",
   password_forgot: "Mot de passe oublié ?",
@@ -230,6 +234,10 @@ fr: {
 },
 
 ar: {
+  role_assistant: "مساعد طبي",
+  role_infirmier: "ممرض",
+  role_assistant_sub: "Équipe du cabinet",
+  role_infirmier_sub: "Équipe de soins",
   password_show: "إظهار",
   password_hide: "إخفاء",
   password_forgot: "هل نسيت كلمة المرور؟",
@@ -430,6 +438,10 @@ ar: {
 },
 
 en: {
+  role_assistant: "Medical assistant",
+  role_infirmier: "Nurse",
+  role_assistant_sub: "Équipe du cabinet",
+  role_infirmier_sub: "Équipe de soins",
   password_show: "Show",
   password_hide: "Hide",
   password_forgot: "Forgot password?",
@@ -630,6 +642,10 @@ en: {
 },
 
 darija: {
+  role_assistant: "مساعد طبي",
+  role_infirmier: "ممرض",
+  role_assistant_sub: "Équipe du cabinet",
+  role_infirmier_sub: "Équipe de soins",
   password_show: "بيّن",
   password_hide: "خبّي",
   password_forgot: "نسيتي كلمة السر؟",

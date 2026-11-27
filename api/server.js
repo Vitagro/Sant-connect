@@ -13,7 +13,8 @@ const { serveDocumentAsset } = require('../lib/document-assets');
 const { evidenceHandler } = require('../lib/evidence');
 const { generateRecoveryCode, resetPassword, changePassword } = require('../lib/account-security');
 const { getWorkspace, evidenceTopics } = require('../lib/evidence-topics');
-const { isEmailRequiredForRole, hashPassword, comparePassword, signToken, requireAuth, requireRole } = require('../lib/auth');
+const team = require('../lib/doctor-team');
+const { isTeamRole, isEmailRequiredForRole, hashPassword, comparePassword, signToken, requireAuth, requireRole } = require('../lib/auth');
 
 // Reserve the administrative username for operator-managed accounts.
 const SUPERADMIN_USERNAME = process.env.SUPERADMIN_USERNAME || 'superadmin';
@@ -101,14 +102,19 @@ app.get('/api/status', async (req, res) => {
   });
 });
 
+function excludeTeamAccounts(req, res, next) {
+  if (isTeamRole(req.user.role)) return res.status(403).json({ error: 'Accès réservé aux comptes habilités.' });
+  next();
+}
+
 // ── LISTS ─────────────────────────────────────────────────────
-app.get('/api/pharmacies', requireAuth, requireDatabase, async (req, res) => {
+app.get('/api/pharmacies', requireAuth, excludeTeamAccounts, requireDatabase, async (req, res) => {
   const { data, error } = await supabase.from('pharmacies').select('*').order('nom');
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
-app.get('/api/laboratoires', requireAuth, requireDatabase, async (req, res) => {
+app.get('/api/laboratoires', requireAuth, excludeTeamAccounts, requireDatabase, async (req, res) => {
   const { data, error } = await supabase.from('laboratoires').select('*').order('nom');
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
@@ -289,7 +295,7 @@ app.post('/api/confirmations/labo', requireAuth, requireRole('labo', 'super_admi
 });
 
 // ── INSURANCE VERIFY ──────────────────────────────────────────
-app.post('/api/assurances/verifier', requireAuth, requireDatabase, async (req, res) => {
+app.post('/api/assurances/verifier', requireAuth, excludeTeamAccounts, requireDatabase, async (req, res) => {
   const { compagnie, numero_police, type_couverture, patient_id } = req.body;
   const autoAPIs = ['CNSS', 'CNOPS'];
 
@@ -323,7 +329,7 @@ app.post('/api/assurances/verifier', requireAuth, requireDatabase, async (req, r
 });
 
 // ── PAYMENT INITIATE ──────────────────────────────────────────
-app.post('/api/paiements/initier', requireAuth, requireDatabase, async (req, res) => {
+app.post('/api/paiements/initier', requireAuth, excludeTeamAccounts, requireDatabase, async (req, res) => {
   const { montant, methode, ordonnance_id, patient_id } = req.body;
   if (!montant || montant <= 0) return res.status(400).json({ error: 'Montant invalide' });
 
@@ -389,7 +395,7 @@ app.post('/api/paiements/callback/cmi', requireDatabase, async (req, res) => {
 });
 
 // ── WHATSAPP TEST ─────────────────────────────────────────────
-app.post('/api/notify/test', requireAuth, async (req, res) => {
+app.post('/api/notify/test', requireAuth, excludeTeamAccounts, async (req, res) => {
   const { tel, role } = req.body;
   if (!tel) return res.status(400).json({ error: 'Numéro requis' });
   const labels = { patient: 'Patient', pharmacie: 'Pharmacie', labo: 'Laboratoire', medecin: 'Médecin' };
@@ -496,6 +502,12 @@ app.post('/api/auth/login', requireAccountService, async (req, res) => {
     if (error) throw error;
     if (!user || !user.is_active) return res.status(401).json({ error: 'Identifiants invalides.' });
 
+    if (isTeamRole(user.role)) {
+      const owner = await supabase.from('users').select('id').eq('id', user.team_owner_id)
+        .eq('is_active', true).eq('role', 'medecin').maybeSingle();
+      if (owner.error) throw owner.error;
+      if (!owner.data) return res.status(401).json({ error: 'Identifiants invalides.' });
+    }
     const ok = await comparePassword(password, user.password_hash);
     if (!ok) return res.status(401).json({ error: 'Identifiants invalides.' });
 
@@ -511,6 +523,21 @@ app.post('/api/auth/login', requireAccountService, async (req, res) => {
 app.post('/api/auth/recovery-code', requireAccountService, requireAuth, generateRecoveryCode);
 app.post('/api/auth/reset-password', requireAccountService, resetPassword);
 app.post('/api/auth/change-password', requireAccountService, requireAuth, changePassword);
+
+function doctorTeamAction(handler) {
+  return async (req, res) => {
+    try {
+      await handler(req, res);
+    } catch {
+      res.status(503).json({ error: 'Gestion de l’équipe momentanément indisponible.' });
+    }
+  };
+}
+
+app.post('/api/auth/team-accept', requireAccountService, doctorTeamAction(team.accept));
+app.get('/api/team', evidenceNoCache, requireAuth, requireRole('medecin'), doctorTeamAction(team.list));
+app.post('/api/team', evidenceNoCache, requireAuth, requireRole('medecin'), doctorTeamAction(team.invite));
+app.patch('/api/team/:id', evidenceNoCache, requireAuth, requireRole('medecin'), doctorTeamAction(team.update));
 
 // ── AUTH: ME ──────────────────────────────────────────────────
 app.get('/api/auth/me', requireAuth, requireDatabase, async (req, res) => {

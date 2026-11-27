@@ -74,7 +74,7 @@ test('sign-up creates a linked account, acts on database errors and denies anony
   assert.match(home, /id="guest-continue"/);
   assert.match(home, /class="container hidden" id="app-root"/);
   for (const [method, route] of [
-    ['GET', '/api/ordonnances'], ['GET', '/api/pharmacies'], ['GET', '/api/laboratoires'],
+    ['GET', '/api/team'], ['POST', '/api/team'], ['PATCH', '/api/team/invalid'], ['GET', '/api/ordonnances'], ['GET', '/api/pharmacies'], ['GET', '/api/laboratoires'],
     ['GET', '/api/auth/me'], ['GET', '/api/evidence/topics'],
     ['GET', '/api/evidence?topic=diabetes&mode=standard'],
     ['POST', '/api/ordonnances'], ['POST', '/api/confirmations/pharmacie'],
@@ -109,6 +109,7 @@ test('sign-up creates a linked account, acts on database errors and denies anony
     Authorization: 'Bearer ' + jwt.sign({ sub: user.id, role }, process.env.JWT_SECRET),
   });
   const patientHeaders = sessionHeaders('patient');
+  assert.equal((await fetch(base + '/api/team', { headers: patientHeaders })).status, 403);
   const patientMenu = await fetch(base + '/api/evidence/topics', { headers: patientHeaders });
   assert.equal(patientMenu.status, 200);
   assert.ok((await patientMenu.json()).questions.some(question => question.id === 'patient-sleep'));

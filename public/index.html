@@ -102,8 +102,19 @@
       <button type="submit" class="btn btn-primary" data-t="password_reset_btn">Réinitialiser</button>
       <button type="button" id="back-to-login" class="btn btn-outline" data-t="password_back_login">Retour à la connexion</button>
     </form>
+    <form id="team-accept-form" class="auth-form hidden">
+      <h2>Activer un compte d’équipe</h2>
+      <p>Utilisez l’identifiant et le code transmis par votre médecin.</p>
+      <div class="form-group"><label for="team-new-user">Identifiant</label><input id="team-new-user" name="username" autocomplete="username" required></div>
+      <div class="form-group"><label for="team-new-code">Code d’invitation</label><input id="team-new-code" name="code" autocomplete="off" spellcheck="false" required></div>
+      <div class="form-group"><label for="team-new-password">Mot de passe</label><div class="password-field"><input id="team-new-password" name="password" type="password" minlength="10" autocomplete="new-password" required><button type="button" class="btn btn-outline password-toggle" aria-controls="team-new-password" aria-pressed="false" data-password-toggle data-t="password_show">Afficher</button></div></div>
+      <div class="form-group"><label for="team-confirm-password">Confirmer le mot de passe</label><input id="team-confirm-password" name="confirmPassword" type="password" minlength="10" autocomplete="new-password" required></div>
+      <button type="submit" class="btn btn-primary">Activer mon compte</button>
+      <button type="button" id="team-back-login" class="btn btn-outline">Retour à la connexion</button>
+    </form>
     <p id="auth-status" role="status"></p>
     <div id="auth-error" class="auth-error" role="status"></div>
+    <button type="button" id="team-accept-link" class="btn btn-outline">J’ai une invitation d’équipe</button>
     <button type="button" id="guest-continue" class="btn btn-outline" data-t="guest_continue">Continuer sans compte</button>
   </div>
 </div>
@@ -170,6 +181,34 @@
     </div>
   </details>
 
+  <details class="card account-security hidden" id="doctor-team">
+    <summary>Mon équipe</summary>
+    <div class="card-body">
+      <div class="security-actions">
+        <form class="security-form" id="team-invite-form">
+          <h3>Inviter un membre</h3>
+          <div class="form-group"><label for="team-role">Rôle</label><select id="team-role" name="role" required><option value="assistant">Assistant(e) médical(e)</option><option value="infirmier">Infirmier(ère)</option></select></div>
+          <div class="form-group"><label for="team-username">Identifiant</label><input id="team-username" name="username" minlength="3" maxlength="32" pattern="[A-Za-z0-9][A-Za-z0-9.&#x5F;\-]{2,31}" autocomplete="off" required></div>
+          <div class="form-grid-2">
+            <div class="form-group"><label for="team-first-name">Prénom (facultatif)</label><input id="team-first-name" name="prenom" maxlength="80"></div>
+            <div class="form-group"><label for="team-last-name">Nom (facultatif)</label><input id="team-last-name" name="nom" maxlength="80"></div>
+          </div>
+          <button type="submit" class="btn btn-primary">Générer une invitation</button>
+        </form>
+        <section>
+          <h3>Membres et invitations</h3>
+          <ul id="team-members"></ul>
+        </section>
+      </div>
+      <div id="team-invite-result" hidden>
+        <p>Transmettez ces informations en privé. Le code expire après 72 heures et ne sert qu’une fois.</p>
+        <code id="team-invite-secret"></code>
+        <button type="button" id="team-invite-copy" class="btn btn-outline">Copier</button>
+      </div>
+      <p id="team-status" role="status"></p>
+    </div>
+  </details>
+
   <!-- ── ROLE SELECTOR (hero band) ── -->
   <div class="hero-band">
     <div class="role-header">
@@ -203,6 +242,8 @@
         <div class="role-title" data-t="role_assurance">Assurance</div>
         <div class="role-desc" data-t="role_assurance_sub">Vérification des couvertures</div>
       </div>
+      <div class="role-card" data-role="assistant"><div class="role-title" data-t="role_assistant">Assistant(e) médical(e)</div></div>
+      <div class="role-card" data-role="infirmier"><div class="role-title" data-t="role_infirmier">Infirmier(ère)</div></div>
       <div class="role-card" data-role="superadmin" style="display:none" onclick="setRole('superadmin')">
         <div class="role-icon">🛡</div>
         <div class="role-title" data-t="role_superadmin">Super Admin</div>
@@ -221,6 +262,9 @@
   </div>
 
   <!-- ══════════════════ PAGE MÉDECIN ══════════════════ -->
+  <section class="card hidden" id="staff-workspace">
+    <div class="card-body"><p>Votre compte est rattaché à votre médecin. Vous pouvez consulter la recherche adaptée à votre rôle et gérer la sécurité de votre compte.</p></div>
+  </section>
   <div id="page-medecin" class="page">
 
     <!-- Sélecteur de spécialité -->
@@ -833,6 +877,7 @@
 <script src="js/api-client.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/account-security.js"></script>
+<script src="js/doctor-team.js"></script>
 
 <!-- ── VITA TECH FOOTER ── -->
 <footer style="background:#063D55;color:rgba(255,255,255,.55);text-align:center;padding:18px 24px;font-size:11px;border-top:2px solid #00C9A7;margin-top:0">

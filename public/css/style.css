@@ -338,3 +338,8 @@ canvas#sigCanvas{width:100%;height:100px;border:1.5px dashed var(--border-strong
 #auth-status{color:var(--primary-dark);font-weight:600}
 #recovery-code-result:not([hidden]){display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 #recovery-code-value{padding:8px;background:var(--surface-3);border-radius:6px;overflow-wrap:anywhere;direction:ltr}
+#team-accept-link{width:100%;margin-top:12px}
+#team-members{list-style:none;margin-block:10px}
+#team-members li{display:grid;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}
+#team-members button{margin-inline-end:6px}
+#team-invite-result:not([hidden]){margin-block:12px;padding:12px;background:var(--surface-3);border-radius:8px;overflow-wrap:anywhere}

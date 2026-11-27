@@ -31,6 +31,10 @@ function switchAuthTab(tab) {
   document.getElementById('tab-register-btn').classList.toggle('active', tab === 'register');
   document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
   document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
+  const recoveryForm = document.getElementById('reset-password-form');
+  recoveryForm.classList.toggle('hidden', tab !== 'reset');
+  if (tab !== 'reset') recoveryForm.reset();
+  document.getElementById('auth-status').textContent = '';
   document.getElementById('auth-error').textContent = '';
 }
 
@@ -112,6 +116,16 @@ function onAuthSuccess() {
 
   void loadPharmaciesLabos();
   const roleCards = document.querySelectorAll('.role-grid .role-card');
+  const role = currentUser.role === 'super_admin' ? 'superadmin' : currentUser.role;
+  const assignedCard = Array.from(roleCards).find(card => card.dataset.role === role);
+  if (assignedCard && currentUser.role !== 'super_admin') {
+    const heading = document.querySelector('.role-header h1');
+    const subtitle = document.querySelector('.role-header p');
+    heading.dataset.t = 'role_' + role;
+    subtitle.dataset.t = 'role_' + role + '_sub';
+    heading.textContent = t(heading.dataset.t);
+    subtitle.textContent = t(subtitle.dataset.t);
+  }
   if (currentUser.role === 'super_admin') {
     roleCards.forEach(c => c.style.display = '');
     const adminCard = document.querySelector('.role-card[data-role="superadmin"]');
@@ -234,6 +248,9 @@ async function toggleUserActive(id, is_active) {
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('nav-logout').addEventListener('click', logout);
+  document.getElementById('tab-login-btn').addEventListener('click', () => switchAuthTab('login'));
+  document.getElementById('tab-register-btn').addEventListener('click', () => switchAuthTab('register'));
   const guest = document.getElementById('guest-root');
   document.getElementById('guest-continue').addEventListener('click', () => {
     hideAuthOverlay();

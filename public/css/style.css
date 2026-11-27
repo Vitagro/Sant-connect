@@ -327,3 +327,14 @@ canvas#sigCanvas{width:100%;height:100px;border:1.5px dashed var(--border-strong
 
 .research-entry .card-body .btn{margin-block-start:12px}
 .guest-research{margin-block-start:16px}
+.password-field{display:flex;align-items:stretch;gap:8px}
+.password-field input{flex:1;min-width:0}
+.password-field .password-toggle{flex:none;min-width:84px;padding-inline:10px;white-space:nowrap}
+.account-security>summary{cursor:pointer;padding:14px 18px;color:var(--primary-dark);font-weight:700}
+.security-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:24px}
+.security-form{display:grid;align-content:start;gap:10px}
+.security-form h3{color:var(--primary-dark);font-size:1rem}
+.security-form [role="status"]:empty,#auth-status:empty{display:none}
+#auth-status{color:var(--primary-dark);font-weight:600}
+#recovery-code-result:not([hidden]){display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+#recovery-code-value{padding:8px;background:var(--surface-3);border-radius:6px;overflow-wrap:anywhere;direction:ltr}

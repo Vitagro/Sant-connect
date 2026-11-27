@@ -37,7 +37,7 @@
   <div class="nav-right">
     <span class="version-badge">v3.0</span>
     <span class="nav-username hidden" id="nav-username"></span>
-    <button class="nav-logout hidden" id="nav-logout" onclick="logout()" data-t="nav_logout">Déconnexion</button>
+    <button class="nav-logout hidden" id="nav-logout" data-t="nav_logout">Déconnexion</button>
     <div class="nav-lang">
       <button class="lang-btn active" id="lang-fr" onclick="setLang('fr')">🇫🇷 FR</button>
       <button class="lang-btn" id="lang-ar" onclick="setLang('ar')">🇲🇦 ع</button>
@@ -51,14 +51,15 @@
 <div id="auth-overlay" class="auth-overlay hidden">
   <div class="auth-box">
     <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login-btn" onclick="switchAuthTab('login')" data-t="tab_login">Connexion</button>
-      <button class="auth-tab" id="tab-register-btn" onclick="switchAuthTab('register')" data-t="tab_register">Inscription</button>
+      <button class="auth-tab active" id="tab-login-btn" data-t="tab_login">Connexion</button>
+      <button class="auth-tab" id="tab-register-btn" data-t="tab_register">Inscription</button>
     </div>
 
     <form id="login-form" class="auth-form">
       <div class="form-group"><label data-t="auth_username">Nom d'utilisateur</label><input name="username" required></div>
-      <div class="form-group"><label data-t="auth_password">Mot de passe</label><input type="password" name="password" required></div>
+      <div class="form-group"><label for="login-password" data-t="auth_password">Mot de passe</label><div class="password-field"><input id="login-password" type="password" name="password" autocomplete="current-password"  required><button type="button" class="btn btn-outline password-toggle" aria-controls="login-password" aria-pressed="false" data-password-toggle data-t="password_show">Afficher</button></div></div>
       <button type="submit" class="btn btn-primary" style="width:100%" data-t="auth_login_btn">Se connecter</button>
+      <button type="button" id="forgot-password" class="btn btn-outline" data-t="password_forgot">Mot de passe oublié ?</button>
     </form>
 
     <form id="register-form" class="auth-form hidden">
@@ -74,7 +75,7 @@
       </div>
       <div class="form-grid-2">
         <div class="form-group"><label data-t="auth_username">Nom d'utilisateur</label><input name="username" required></div>
-        <div class="form-group"><label data-t="auth_password">Mot de passe</label><input type="password" name="password" required minlength="6"></div>
+        <div class="form-group"><label for="register-password" data-t="auth_password">Mot de passe</label><div class="password-field"><input id="register-password" type="password" name="password" autocomplete="new-password" minlength="6" required><button type="button" class="btn btn-outline password-toggle" aria-controls="register-password" aria-pressed="false" data-password-toggle data-t="password_show">Afficher</button></div></div>
       </div>
       <div class="form-grid-2">
         <div class="form-group"><label data-t="auth_nom">Nom</label><input name="nom"></div>
@@ -91,6 +92,17 @@
       <button type="submit" class="btn btn-primary" style="width:100%" data-t="auth_create_account">Créer mon compte</button>
     </form>
 
+    <form id="reset-password-form" class="auth-form hidden">
+      <h2 data-t="password_reset_title">Réinitialiser le mot de passe</h2>
+      <p data-t="password_reset_help">Utilisez le code enregistré dans Sécurité du compte. Ce code ne fonctionne qu’une fois.</p>
+      <div class="form-group"><label for="recovery-username" data-t="auth_username">Nom d’utilisateur</label><input id="recovery-username" name="username" autocomplete="username" required></div>
+      <div class="form-group"><label for="recovery-code" data-t="recovery_code_label">Code de récupération</label><input id="recovery-code" name="code" autocomplete="off" spellcheck="false" required></div>
+      <div class="form-group"><label for="reset-password" data-t="password_new">Nouveau mot de passe</label><div class="password-field"><input id="reset-password" type="password" name="newPassword" autocomplete="new-password" minlength="10" required><button type="button" class="btn btn-outline password-toggle" aria-controls="reset-password" aria-pressed="false" data-password-toggle data-t="password_show">Afficher</button></div></div>
+      <div class="form-group"><label for="reset-confirm" data-t="password_confirm">Confirmer le nouveau mot de passe</label><div class="password-field"><input id="reset-confirm" type="password" name="confirmPassword" autocomplete="new-password" minlength="10" required><button type="button" class="btn btn-outline password-toggle" aria-controls="reset-confirm" aria-pressed="false" data-password-toggle data-t="password_show">Afficher</button></div></div>
+      <button type="submit" class="btn btn-primary" data-t="password_reset_btn">Réinitialiser</button>
+      <button type="button" id="back-to-login" class="btn btn-outline" data-t="password_back_login">Retour à la connexion</button>
+    </form>
+    <p id="auth-status" role="status"></p>
     <div id="auth-error" class="auth-error" role="status"></div>
     <button type="button" id="guest-continue" class="btn btn-outline" data-t="guest_continue">Continuer sans compte</button>
   </div>
@@ -130,6 +142,33 @@
       <a href="/recherche-medicale.html" class="btn btn-outline" data-t="evidence_link">Recherche médicale</a>
     </div>
   </section>
+
+  <details class="card account-security" id="account-security">
+    <summary data-t="account_security_title">Sécurité du compte</summary>
+    <div class="card-body">
+      <div class="security-actions">
+        <form id="recovery-code-form" class="security-form">
+          <h3 data-t="recovery_code_label">Code de récupération</h3>
+          <p data-t="recovery_code_help">Conservez ce code à l’abri. Chaque nouveau code remplace l’ancien. Il est valable un an.</p>
+          <div class="form-group"><label for="code-current" data-t="password_current">Mot de passe actuel</label><div class="password-field"><input id="code-current" type="password" name="currentPassword" autocomplete="current-password"  required><button type="button" class="btn btn-outline password-toggle" aria-controls="code-current" aria-pressed="false" data-password-toggle data-t="password_show">Afficher</button></div></div>
+          <button type="submit" class="btn btn-outline" data-t="recovery_code_create">Générer un code</button>
+          <div id="recovery-code-result" hidden>
+            <code id="recovery-code-value"></code>
+            <button type="button" id="copy-recovery-code" class="btn btn-outline" data-t="recovery_code_copy">Copier le code</button>
+          </div>
+          <p id="recovery-code-status" role="status"></p>
+        </form>
+        <form id="change-password-form" class="security-form">
+          <h3 data-t="password_change">Changer le mot de passe</h3>
+          <div class="form-group"><label for="change-current" data-t="password_current">Mot de passe actuel</label><div class="password-field"><input id="change-current" type="password" name="currentPassword" autocomplete="current-password"  required><button type="button" class="btn btn-outline password-toggle" aria-controls="change-current" aria-pressed="false" data-password-toggle data-t="password_show">Afficher</button></div></div>
+          <div class="form-group"><label for="change-new" data-t="password_new">Nouveau mot de passe</label><div class="password-field"><input id="change-new" type="password" name="newPassword" autocomplete="new-password" minlength="10" required><button type="button" class="btn btn-outline password-toggle" aria-controls="change-new" aria-pressed="false" data-password-toggle data-t="password_show">Afficher</button></div></div>
+          <div class="form-group"><label for="change-confirm" data-t="password_confirm">Confirmer le nouveau mot de passe</label><div class="password-field"><input id="change-confirm" type="password" name="confirmPassword" autocomplete="new-password" minlength="10" required><button type="button" class="btn btn-outline password-toggle" aria-controls="change-confirm" aria-pressed="false" data-password-toggle data-t="password_show">Afficher</button></div></div>
+          <button type="submit" class="btn btn-primary" data-t="password_change">Changer le mot de passe</button>
+          <p id="change-password-status" role="status"></p>
+        </form>
+      </div>
+    </div>
+  </details>
 
   <!-- ── ROLE SELECTOR (hero band) ── -->
   <div class="hero-band">
@@ -793,6 +832,7 @@
 <script src="js/app.js"></script>
 <script src="js/api-client.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/account-security.js"></script>
 
 <!-- ── VITA TECH FOOTER ── -->
 <footer style="background:#063D55;color:rgba(255,255,255,.55);text-align:center;padding:18px 24px;font-size:11px;border-top:2px solid #00C9A7;margin-top:0">

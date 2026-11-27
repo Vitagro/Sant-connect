@@ -321,3 +321,6 @@ canvas#sigCanvas{width:100%;height:100px;border:1.5px dashed var(--border-strong
 .nav-username{color:#fff;font-size:12px;font-weight:600;opacity:.85}
 .nav-logout{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:5px 10px;font-size:11.5px;cursor:pointer}
 .nav-logout:hover{background:rgba(255,255,255,.18)}
+#guest-continue{width:100%;margin-top:12px}
+#guest-root .card-header h1{color:#fff;font-size:1.2rem;margin:0}
+.guest-services{padding-inline-start:1.5rem;margin-block:12px}

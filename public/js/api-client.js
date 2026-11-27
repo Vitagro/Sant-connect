@@ -1,9 +1,15 @@
 // public/js/api-client.js — SantéConnect v3 | Vita Tech | vita-core.org
 
 // Auto-detect API base URL
-window.API_BASE = window.location.hostname === 'localhost'
-  ? 'http://localhost:3000/api'
-  : '/api';
+window.API_BASE = '/api';
+
+function sessionFetch(url, options = {}) {
+  const headers = new Headers(options.headers);
+  if (options.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+  const token = localStorage.getItem('sc_token');
+  if (token) headers.set('Authorization', 'Bearer ' + token);
+  return fetch(url, { ...options, headers });
+}
 
 // Supabase public keys from meta tags
 const SUPA_URL = document.querySelector('meta[name="supa-url"]')?.content || '';
@@ -38,8 +44,8 @@ function updateServerBadge(ok, supa, wa) {
 async function loadPharmaciesLabos() {
   try {
     const [pharmacies, labos] = await Promise.all([
-      fetch(window.API_BASE + '/pharmacies').then(r => r.json()).catch(() => []),
-      fetch(window.API_BASE + '/laboratoires').then(r => r.json()).catch(() => []),
+      sessionFetch(window.API_BASE + '/pharmacies').then(r => r.json()).catch(() => []),
+      sessionFetch(window.API_BASE + '/laboratoires').then(r => r.json()).catch(() => []),
     ]);
     fillSelect('pharmacie-nom-wa-sel', pharmacies, 'nom', 'telephone', 'Pharmacie');
     fillSelect('labo-nom-wa-sel', labos, 'nom', 'telephone', 'Laboratoire');
@@ -72,7 +78,7 @@ async function onEnvoyerOrdonnance() {
   const data = collectOrdoData();
   showToast('💬 Envoi en cours…');
   try {
-    const r = await fetch(window.API_BASE + '/ordonnances', {
+    const r = await sessionFetch(window.API_BASE + '/ordonnances', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -182,7 +188,7 @@ async function testerNotificationWA(role, telId) {
   if (!tel) { showToast('⚠ Entrez un numéro', true); return; }
   showToast('📤 Envoi test…');
   try {
-    const r = await fetch(window.API_BASE + '/notify/test', {
+    const r = await sessionFetch(window.API_BASE + '/notify/test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tel, role }),
@@ -197,7 +203,7 @@ async function testerNotificationWA(role, telId) {
 // ── INSURANCE ─────────────────────────────────────────────────
 async function verifyInsuranceAPI(compagnie, police, couv) {
   try {
-    const r = await fetch(window.API_BASE + '/assurances/verifier', {
+    const r = await sessionFetch(window.API_BASE + '/assurances/verifier', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ compagnie, numero_police: police, type_couverture: couv }),
@@ -211,7 +217,7 @@ async function verifyInsuranceAPI(compagnie, police, couv) {
 // ── PAYMENT ───────────────────────────────────────────────────
 async function initiatePaymentAPI(montant, methode, ordonnanceId) {
   try {
-    const r = await fetch(window.API_BASE + '/paiements/initier', {
+    const r = await sessionFetch(window.API_BASE + '/paiements/initier', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ montant, methode, ordonnance_id: ordonnanceId || null, devise: 'MAD' }),
@@ -250,5 +256,5 @@ window.proceedPayment = async function() {
 window.addEventListener('DOMContentLoaded', () => {
   checkServer();
   setInterval(checkServer, 20000);
-  loadPharmaciesLabos();
+
 });

@@ -56,6 +56,7 @@ npm install
 vercel env add SUPABASE_URL
 vercel env add SUPABASE_ANON_KEY
 vercel env add SUPABASE_SERVICE_KEY
+vercel env add JWT_SECRET
 vercel env add TWILIO_ACCOUNT_SID
 vercel env add TWILIO_AUTH_TOKEN
 vercel env add TWILIO_WHATSAPP_NUMBER
@@ -191,3 +192,9 @@ vercel open
 ---
 
 *Document confidentiel — Vita Tech © 2025 — Tous droits réservés*
+
+## Vérifier le service des comptes
+
+Sur le projet cible, renseigner le service Supabase de SantéConnect et `JWT_SECRET` dans les variables serveur. Conserver le secret JWT existant si des sessions doivent rester valides. Confirmer que le schéma v3 est chargé, notamment `public.users` et les tables des profils professionnels, et que le rôle serveur dispose des autorisations Data API requises. Le contrôle `/api/status` vérifie la lecture de la table des ordonnances. Vérifier aussi une inscription de test dans un environnement de prévisualisation.
+
+Sans service de comptes opérationnel, l’inscription et la connexion renvoient une indisponibilité temporaire. **Continuer sans compte** ouvre la présentation publique des services sans créer de session. Le visiteur ne peut pas consulter les ordonnances ni envoyer de demandes, de notifications ou d’initiations de paiement depuis cet espace.

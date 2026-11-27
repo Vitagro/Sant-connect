@@ -8,12 +8,21 @@ function authToken() { return localStorage.getItem('sc_token'); }
 function setAuthToken(t) { t ? localStorage.setItem('sc_token', t) : localStorage.removeItem('sc_token'); }
 
 async function apiAuthFetch(path, options = {}) {
-  const headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
-  const token = authToken();
-  if (token) headers.Authorization = 'Bearer ' + token;
-  const r = await fetch(window.API_BASE + path, Object.assign({}, options, { headers }));
+  let r;
+  try {
+    r = await sessionFetch(window.API_BASE + path, options);
+  } catch {
+    throw new Error(t('guest_auth_unavailable'));
+  }
   const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || t('auth_err_server'));
+  if (!r.ok) {
+    const error = new Error(r.status >= 500 ? t('guest_auth_unavailable') : data.error || t('auth_err_server'));
+    error.status = r.status;
+    throw error;
+  }
+  if (!data.user && (path === '/auth/register' || path === '/auth/login' || path === '/auth/me')) {
+    throw new Error(t('guest_auth_unavailable'));
+  }
   return data;
 }
 
@@ -27,11 +36,11 @@ function switchAuthTab(tab) {
 
 function showAuthOverlay() {
   document.getElementById('auth-overlay').classList.remove('hidden');
-  document.getElementById('app-root').classList.add('locked');
+  document.getElementById('app-root').classList.add('hidden');
+  document.getElementById('guest-root').classList.add('hidden');
 }
 function hideAuthOverlay() {
   document.getElementById('auth-overlay').classList.add('hidden');
-  document.getElementById('app-root').classList.remove('locked');
 }
 
 function updateEmailRequirement() {
@@ -40,6 +49,8 @@ function updateEmailRequirement() {
   const emailLabel = document.getElementById('reg-email-label');
   const required = EMAIL_REQUIRED_ROLES.has(role);
   emailInput.required = required;
+  const form = document.getElementById('register-form');
+  for (const name of ['nom', 'prenom']) form.elements.namedItem(name).required = role === 'medecin';
   emailLabel.setAttribute('data-t', required ? 'auth_email_required' : 'auth_email_optional');
   emailLabel.textContent = t(required ? 'auth_email_required' : 'auth_email_optional');
 }
@@ -93,10 +104,13 @@ async function handleLogin(e) {
 
 function onAuthSuccess() {
   hideAuthOverlay();
+  document.getElementById('guest-root').classList.add('hidden');
+  document.getElementById('app-root').classList.remove('hidden');
   document.getElementById('nav-logout').classList.remove('hidden');
   document.getElementById('nav-username').textContent = currentUser.username;
   document.getElementById('nav-username').classList.remove('hidden');
 
+  void loadPharmaciesLabos();
   const roleCards = document.querySelectorAll('.role-grid .role-card');
   if (currentUser.role === 'super_admin') {
     roleCards.forEach(c => c.style.display = '');
@@ -210,6 +224,19 @@ async function toggleUserActive(id, is_active) {
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
+  const guest = document.getElementById('guest-root');
+  document.getElementById('guest-continue').addEventListener('click', () => {
+    hideAuthOverlay();
+    guest.classList.remove('hidden');
+    guest.querySelector('h1').focus();
+  });
+  for (const [button, tab] of [['guest-sign-in', 'login'], ['guest-sign-up', 'register']]) {
+    document.getElementById(button).addEventListener('click', () => {
+      showAuthOverlay();
+      switchAuthTab(tab);
+      document.getElementById(tab + '-form').elements.namedItem('username').focus();
+    });
+  }
   document.getElementById('register-form')?.addEventListener('submit', handleRegister);
   document.getElementById('login-form')?.addEventListener('submit', handleLogin);
   document.querySelectorAll('#register-form input[name="role"]').forEach(r => r.addEventListener('change', updateEmailRequirement));
@@ -221,8 +248,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     const { user } = await apiAuthFetch('/auth/me');
     currentUser = user;
     onAuthSuccess();
-  } catch {
-    setAuthToken(null);
+  } catch (error) {
+    if ([401, 403, 404].includes(error.status)) setAuthToken(null);
     showAuthOverlay();
   }
 });

@@ -9,9 +9,11 @@ const path     = require('path');
 const crypto   = require('crypto');
 const { supabase } = require('../lib/supabase');
 const wa = require('../lib/whatsapp');
+const { serveDocumentAsset } = require('../lib/document-assets');
+const { evidenceHandler } = require('../lib/evidence');
 const { isEmailRequiredForRole, hashPassword, comparePassword, signToken, requireAuth, requireRole } = require('../lib/auth');
 
-// Reserved username that is always granted the super_admin role on registration.
+// Reserve the administrative username for operator-managed accounts.
 const SUPERADMIN_USERNAME = process.env.SUPERADMIN_USERNAME || 'superadmin';
 const PUBLIC_ROLES = ['medecin', 'patient', 'labo', 'pharmacie', 'assurance'];
 
@@ -46,14 +48,35 @@ app.use(cors({
 app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, '../public')));
 
+app.get('/api/document-assets/:asset', serveDocumentAsset);
+
 // ── RATE LIMITING ─────────────────────────────────────────────
 app.use('/api/', rateLimit({ windowMs: 15*60*1000, max: 100, standardHeaders: true }));
 app.use('/api/auth/', rateLimit({ windowMs: 15*60*1000, max: 5, skipSuccessfulRequests: true }));
 app.use('/api/paiements/', rateLimit({ windowMs: 60*60*1000, max: 10 }));
 
+app.all('/api/evidence',
+  (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); },
+  requireAuth, requireRole('medecin'),
+  rateLimit({ windowMs: 15 * 60 * 1000, limit: 15, standardHeaders: true, legacyHeaders: false }),
+  evidenceHandler());
+
+function requireDatabase(req, res, next) {
+  if (!supabase) return res.status(503).json({ error: 'Service momentanément indisponible.' });
+  next();
+}
+
+function requireAccountService(req, res, next) {
+  res.set('Cache-Control', 'no-store');
+  if (!supabase || !process.env.JWT_SECRET?.trim()) {
+    return res.status(503).json({ error: 'Service des comptes momentanément indisponible. Vous pouvez continuer sans compte.' });
+  }
+  next();
+}
+
 // ── STATUS ────────────────────────────────────────────────────
 app.get('/api/status', async (req, res) => {
-  const { data, error } = await supabase.from('ordonnances').select('count', { count: 'exact', head: true });
+  const { error } = supabase ? await supabase.from('ordonnances').select('id', { head: true }).limit(1) : { error: true };
   res.json({
     status: 'ok',
     service: 'SantéConnect v3',
@@ -66,20 +89,20 @@ app.get('/api/status', async (req, res) => {
 });
 
 // ── LISTS ─────────────────────────────────────────────────────
-app.get('/api/pharmacies', async (req, res) => {
+app.get('/api/pharmacies', requireAuth, requireDatabase, async (req, res) => {
   const { data, error } = await supabase.from('pharmacies').select('*').order('nom');
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
-app.get('/api/laboratoires', async (req, res) => {
+app.get('/api/laboratoires', requireAuth, requireDatabase, async (req, res) => {
   const { data, error } = await supabase.from('laboratoires').select('*').order('nom');
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
 // ── SEND ORDONNANCE ───────────────────────────────────────────
-app.post('/api/ordonnances', async (req, res) => {
+app.post('/api/ordonnances', requireAuth, requireRole('medecin', 'super_admin'), requireDatabase, async (req, res) => {
   const { medecin, patient, pharmacie, laboratoire, medicaments, analyses, diagnostic, notes, date_ordo, lieu, specialty } = req.body;
   try {
     // 1. Insert médecin
@@ -191,7 +214,7 @@ app.post('/api/ordonnances', async (req, res) => {
 });
 
 // ── PHARMACIE CONFIRM ─────────────────────────────────────────
-app.post('/api/confirmations/pharmacie', async (req, res) => {
+app.post('/api/confirmations/pharmacie', requireAuth, requireRole('pharmacie', 'super_admin'), requireDatabase, async (req, res) => {
   const { ordonnance_id, pharmacie_id, prix_total, medicaments_dispo, medicaments_manq, message } = req.body;
   try {
     await supabase.from('confirmations_pharmacie').insert([{
@@ -221,7 +244,7 @@ app.post('/api/confirmations/pharmacie', async (req, res) => {
 });
 
 // ── LABO CONFIRM ──────────────────────────────────────────────
-app.post('/api/confirmations/labo', async (req, res) => {
+app.post('/api/confirmations/labo', requireAuth, requireRole('labo', 'super_admin'), requireDatabase, async (req, res) => {
   const { ordonnance_id, labo_id, rdv_date, rdv_heure, instructions, jeun_requis } = req.body;
   try {
     await supabase.from('confirmations_labo').insert([{
@@ -253,7 +276,7 @@ app.post('/api/confirmations/labo', async (req, res) => {
 });
 
 // ── INSURANCE VERIFY ──────────────────────────────────────────
-app.post('/api/assurances/verifier', async (req, res) => {
+app.post('/api/assurances/verifier', requireAuth, requireDatabase, async (req, res) => {
   const { compagnie, numero_police, type_couverture, patient_id } = req.body;
   const autoAPIs = ['CNSS', 'CNOPS'];
 
@@ -287,7 +310,7 @@ app.post('/api/assurances/verifier', async (req, res) => {
 });
 
 // ── PAYMENT INITIATE ──────────────────────────────────────────
-app.post('/api/paiements/initier', async (req, res) => {
+app.post('/api/paiements/initier', requireAuth, requireDatabase, async (req, res) => {
   const { montant, methode, ordonnance_id, patient_id } = req.body;
   if (!montant || montant <= 0) return res.status(400).json({ error: 'Montant invalide' });
 
@@ -341,7 +364,7 @@ app.post('/api/paiements/initier', async (req, res) => {
 });
 
 // ── CMI CALLBACK ──────────────────────────────────────────────
-app.post('/api/paiements/callback/cmi', async (req, res) => {
+app.post('/api/paiements/callback/cmi', requireDatabase, async (req, res) => {
   const { oid, Response } = req.body;
   if (Response === 'Approved') {
     await supabase.from('transactions').update({ statut: 'payee', paid_at: new Date().toISOString() }).eq('id', oid).catch(() => {});
@@ -353,7 +376,7 @@ app.post('/api/paiements/callback/cmi', async (req, res) => {
 });
 
 // ── WHATSAPP TEST ─────────────────────────────────────────────
-app.post('/api/notify/test', async (req, res) => {
+app.post('/api/notify/test', requireAuth, async (req, res) => {
   const { tel, role } = req.body;
   if (!tel) return res.status(400).json({ error: 'Numéro requis' });
   const labels = { patient: 'Patient', pharmacie: 'Pharmacie', labo: 'Laboratoire', medecin: 'Médecin' };
@@ -362,7 +385,7 @@ app.post('/api/notify/test', async (req, res) => {
 });
 
 // ── ORDONNANCES LIST ──────────────────────────────────────────
-app.get('/api/ordonnances', async (req, res) => {
+app.get('/api/ordonnances', requireAuth, requireRole('super_admin'), requireDatabase, async (req, res) => {
   const { pharmacie_id, labo_id, statut, limit = 20 } = req.query;
   let q = supabase.from('ordonnances').select(`
     *, medecins(*), patients(*), pharmacies(*), laboratoires(*),
@@ -377,77 +400,87 @@ app.get('/api/ordonnances', async (req, res) => {
 });
 
 // ── AUTH: REGISTER ────────────────────────────────────────────
-app.post('/api/auth/register', async (req, res) => {
-  const { username, password, role, email, nom, prenom, telephone, profile } = req.body;
+app.post('/api/auth/register', requireAccountService, async (req, res) => {
+  const { username: rawUsername, password, role, email: rawEmail, nom, prenom, telephone, profile } = req.body || {};
+  const username = typeof rawUsername === 'string' ? rawUsername.trim() : '';
+  const email = typeof rawEmail === 'string' ? rawEmail.trim() : '';
 
-  if (!username || !password || !role) {
-    return res.status(400).json({ error: 'Nom d\'utilisateur, mot de passe et rôle sont requis.' });
+  if (!username || typeof password !== 'string' || !PUBLIC_ROLES.includes(role)) {
+    return res.status(400).json({ error: 'Vérifiez le nom d’utilisateur, le mot de passe et le rôle.' });
   }
-  if (!PUBLIC_ROLES.includes(role)) {
-    return res.status(400).json({ error: 'Rôle invalide.' });
+  if (username.toLowerCase() === SUPERADMIN_USERNAME.trim().toLowerCase()) {
+    return res.status(400).json({ error: 'Ce nom d’utilisateur n’est pas disponible.' });
   }
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Mot de passe minimum 6 caractères.' });
+  if (password.length < 6 || Buffer.byteLength(password, 'utf8') > 72) {
+    return res.status(400).json({ error: 'Choisissez un mot de passe de 6 caractères minimum et de 72 octets maximum.' });
   }
   if (isEmailRequiredForRole(role) && !email) {
-    return res.status(400).json({ error: 'L\'email est obligatoire pour ce type de compte.' });
+    return res.status(400).json({ error: 'L’email est obligatoire pour ce type de compte.' });
   }
 
-  try {
-    const { data: existing } = await supabase.from('users').select('id').eq('username', username).maybeSingle();
-    if (existing) return res.status(409).json({ error: 'Ce nom d\'utilisateur est déjà pris.' });
+  const profileName = profile?.nom || nom;
+  if (role === 'medecin' && (!nom || !prenom)) {
+    return res.status(400).json({ error: 'Le nom et le prénom du médecin sont obligatoires.' });
+  }
+  const profileTables = { medecin: 'medecins', labo: 'laboratoires', pharmacie: 'pharmacies', assurance: 'assurances' };
+  const table = profileTables[role];
+  if (table && !profileName) {
+    return res.status(400).json({ error: 'Renseignez le nom de votre établissement ou votre nom.' });
+  }
 
-    const effectiveRole = username === SUPERADMIN_USERNAME ? 'super_admin' : role;
+  const id = crypto.randomUUID();
+  let profileId = null;
+  let stage = 'lookup';
+  try {
+    // Prepare the session before any write, so a bad JWT configuration cannot leave a new account behind.
+    const token = signToken({ id, username, role });
+    const { data: existing, error: lookupError } = await supabase.from('users')
+      .select('id').eq('username', username).maybeSingle();
+    if (lookupError) throw lookupError;
+    if (existing) return res.status(409).json({ error: 'Ce nom d’utilisateur est déjà pris.' });
     const password_hash = await hashPassword(password);
 
-    // Create the linked professional profile row when applicable (medecin/labo/pharmacie/assurance).
-    let profileId = null;
-    if (effectiveRole === 'medecin' && profile) {
-      const { data: p } = await supabase.from('medecins').insert([{
-        nom: profile.nom || nom, prenom: profile.prenom || prenom, titre: profile.titre || 'generaliste',
-        cabinet: profile.cabinet || '', ville: profile.ville || '', telephone: telephone || '',
-        email: email || null,
-      }]).select().single();
-      profileId = p?.id || null;
-    } else if (effectiveRole === 'labo' && profile) {
-      const { data: p } = await supabase.from('laboratoires').insert([{
-        nom: profile.nom || nom, adresse: profile.adresse || null, ville: profile.ville || null, telephone: telephone || null,
-      }]).select().single();
-      profileId = p?.id || null;
-    } else if (effectiveRole === 'pharmacie' && profile) {
-      const { data: p } = await supabase.from('pharmacies').insert([{
-        nom: profile.nom || nom, adresse: profile.adresse || null, ville: profile.ville || null, telephone: telephone || null,
-      }]).select().single();
-      profileId = p?.id || null;
-    } else if (effectiveRole === 'assurance' && profile) {
-      const { data: p } = await supabase.from('assurances').insert([{
-        nom: profile.nom || nom, adresse: profile.adresse || null, ville: profile.ville || null, telephone: telephone || null,
-      }]).select().single();
-      profileId = p?.id || null;
+    if (table) {
+      stage = 'profile';
+      const values = role === 'medecin'
+        ? { nom, prenom, titre: profile?.titre || 'generaliste', cabinet: profile?.cabinet || profileName,
+          ville: profile?.ville || '', telephone: telephone || '', email: email || null }
+        : { nom: profileName, adresse: profile?.adresse || null, ville: profile?.ville || null, telephone: telephone || null };
+      const { data, error } = await supabase.from(table).insert(values).select('id').single();
+      if (error) throw error;
+      profileId = data.id;
     }
 
-    const { data: user, error } = await supabase.from('users').insert([{
-      username, email: email || null, password_hash,
-      role: effectiveRole, nom: nom || null, prenom: prenom || null,
-      telephone: telephone || null, profile_id: profileId,
-    }]).select('id, username, email, role, nom, prenom, telephone').single();
+    stage = 'account';
+    const { data: user, error } = await supabase.from('users').insert({
+      id, username, email: email || null, password_hash, role,
+      nom: nom || null, prenom: prenom || null, telephone: telephone || null, profile_id: profileId,
+    }).select('id, username, email, role, nom, prenom, telephone').single();
     if (error) throw error;
-
-    const token = signToken(user);
-    res.status(201).json({ token, user });
+    return res.status(201).json({ token, user });
   } catch (err) {
-    console.error('[POST /api/auth/register]', err.message);
-    res.status(500).json({ error: 'Erreur lors de la création du compte.' });
+    // Delete only a profile we just created, and only when Postgres definitively rejected the account write.
+    if (profileId && stage === 'account' && /^[0-9A-Z]{5}$/.test(err.code || '')) {
+      const { error: cleanupError } = await supabase.from(table).delete().eq('id', profileId);
+      if (cleanupError) console.error('[register] profile cleanup failed', cleanupError.code || 'unknown');
+    }
+    if (stage === 'account' && err.code === '23505') {
+      return res.status(409).json({ error: 'Ce nom d’utilisateur est déjà pris.' });
+    }
+    console.error('[register]', stage, err.code || 'unavailable');
+    return res.status(503).json({ error: 'Inscription momentanément indisponible. Vous pouvez continuer sans compte.' });
   }
 });
 
+
 // ── AUTH: LOGIN ───────────────────────────────────────────────
-app.post('/api/auth/login', async (req, res) => {
-  const { username, password } = req.body;
+app.post('/api/auth/login', requireAccountService, async (req, res) => {
+  const { username, password } = req.body || {};
   if (!username || !password) return res.status(400).json({ error: 'Identifiants requis.' });
 
   try {
-    const { data: user } = await supabase.from('users').select('*').eq('username', username).maybeSingle();
+    const { data: user, error } = await supabase.from('users').select('*').eq('username', username).maybeSingle();
+    if (error) throw error;
     if (!user || !user.is_active) return res.status(401).json({ error: 'Identifiants invalides.' });
 
     const ok = await comparePassword(password, user.password_hash);
@@ -457,21 +490,22 @@ app.post('/api/auth/login', async (req, res) => {
     const token = signToken(publicUser);
     res.json({ token, user: publicUser });
   } catch (err) {
-    console.error('[POST /api/auth/login]', err.message);
-    res.status(500).json({ error: 'Erreur de connexion.' });
+    console.error('[login]', err.code || 'unavailable');
+    res.status(503).json({ error: 'Connexion momentanément indisponible. Vous pouvez continuer sans compte.' });
   }
 });
 
 // ── AUTH: ME ──────────────────────────────────────────────────
-app.get('/api/auth/me', requireAuth, async (req, res) => {
+app.get('/api/auth/me', requireAuth, requireDatabase, async (req, res) => {
   const { data: user, error } = await supabase.from('users')
-    .select('id, username, email, role, nom, prenom, telephone').eq('id', req.user.sub).maybeSingle();
-  if (error || !user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
+    .select('id, username, email, role, nom, prenom, telephone').eq('id', req.user.sub).eq('is_active', true).maybeSingle();
+  if (error) return res.status(503).json({ error: 'Service des comptes momentanément indisponible.' });
+  if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
   res.json({ user });
 });
 
 // ── ASSURANCE QUEUE (role: assurance / super_admin) ───────────
-app.get('/api/assurances/queue', requireAuth, requireRole('assurance', 'super_admin'), async (req, res) => {
+app.get('/api/assurances/queue', requireAuth, requireDatabase, requireRole('assurance', 'super_admin'), async (req, res) => {
   const { data, error } = await supabase.from('assurance_queue')
     .select('*, patients(nom, prenom, telephone)').order('created_at', { ascending: false }).limit(50);
   if (error) return res.status(500).json({ error: error.message });
@@ -479,13 +513,13 @@ app.get('/api/assurances/queue', requireAuth, requireRole('assurance', 'super_ad
 });
 
 // ── ADMIN: PERMISSIONS MATRIX (Super Admin) ──────────────────
-app.get('/api/admin/permissions', requireAuth, requireRole('super_admin'), async (req, res) => {
+app.get('/api/admin/permissions', requireAuth, requireRole('super_admin'), requireDatabase, async (req, res) => {
   const { data, error } = await supabase.from('role_permissions').select('*').order('role');
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
-app.put('/api/admin/permissions/:role', requireAuth, requireRole('super_admin'), async (req, res) => {
+app.put('/api/admin/permissions/:role', requireAuth, requireRole('super_admin'), requireDatabase, async (req, res) => {
   const { role } = req.params;
   const allowed = ['can_view_ordonnances', 'can_view_patients', 'can_view_pharmacies', 'can_view_laboratoires', 'can_view_assurances', 'can_view_transactions', 'can_manage_users'];
   const updates = {};
@@ -498,7 +532,7 @@ app.put('/api/admin/permissions/:role', requireAuth, requireRole('super_admin'),
 });
 
 // ── ADMIN: USER LIST (Super Admin) ────────────────────────────
-app.get('/api/admin/users', requireAuth, requireRole('super_admin'), async (req, res) => {
+app.get('/api/admin/users', requireAuth, requireRole('super_admin'), requireDatabase, async (req, res) => {
   const { data, error } = await supabase.from('users')
     .select('id, username, email, role, nom, prenom, telephone, is_active, created_at')
     .order('created_at', { ascending: false });
@@ -506,7 +540,7 @@ app.get('/api/admin/users', requireAuth, requireRole('super_admin'), async (req,
   res.json(data);
 });
 
-app.put('/api/admin/users/:id', requireAuth, requireRole('super_admin'), async (req, res) => {
+app.put('/api/admin/users/:id', requireAuth, requireRole('super_admin'), requireDatabase, async (req, res) => {
   const { role, is_active } = req.body;
   const updates = {};
   if (role && PUBLIC_ROLES.includes(role)) updates.role = role;
@@ -524,11 +558,11 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+if (require.main === module) app.listen(PORT, () => {
   console.log('\n🏥 SantéConnect v3 — Powered by Vita Tech');
   console.log(`🌐 Domain  : https://vita-core.org`);
   console.log(`📡 API     : http://localhost:${PORT}/api`);
-  console.log(`📦 Supabase: ${process.env.SUPABASE_URL ? '✅' : '⚠ Non configuré'}`);
+  console.log(`📦 Supabase: ${supabase ? '✅' : '⚠ Non configuré'}`);
   console.log(`💬 WhatsApp: ${process.env.TWILIO_ACCOUNT_SID ? '✅' : '⚠ Non configuré'}`);
   console.log(`💳 CMI     : ${process.env.CMI_CLIENT_ID ? '✅' : '⚠ Non configuré'}\n`);
 });

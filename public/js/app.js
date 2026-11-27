@@ -625,7 +625,7 @@ async function onEnvoyerOrdonnance() {
   const data = collectOrdoData();
   showToast('💬 Envoi des notifications WhatsApp…');
   try {
-    const r = await fetch((window.API_BASE || '/api') + '/ordonnances', {
+    const r = await sessionFetch((window.API_BASE || '/api') + '/ordonnances', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -676,7 +676,7 @@ async function testerNotificationWA(role, telId) {
   if (!tel) { showToast('⚠ Entrez un numéro', true); return; }
   showToast('📤 Envoi du message test…');
   try {
-    const r = await fetch((window.API_BASE || '/api') + '/notify/test', {
+    const r = await sessionFetch((window.API_BASE || '/api') + '/notify/test', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ tel, role })
     });

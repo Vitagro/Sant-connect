@@ -4,6 +4,7 @@
   "description": "SantéConnect v3 — Plateforme médicale complète toutes spécialités",
   "main": "api/server.js",
   "scripts": {
+    "test": "node --test test/*.test.js",
     "start": "node api/server.js",
     "dev": "nodemon api/server.js",
     "build": "echo 'Static build ready'",
@@ -15,27 +16,37 @@
     "ios:open": "npx cap open ios"
   },
   "dependencies": {
+    "@capacitor/android": "latest",
     "@capacitor/cli": "latest",
     "@capacitor/core": "latest",
-    "@capacitor/android": "latest",
     "@capacitor/ios": "latest",
     "@supabase/supabase-js": "^2.39.0",
-    "twilio": "^4.20.0",
+    "@tesseract.js-data/ara": "1.0.0",
+    "@tesseract.js-data/eng": "1.0.0",
+    "@tesseract.js-data/fra": "1.0.0",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.1.0",
-    "express-rate-limit": "^7.1.5",
     "express-mongo-sanitize": "^2.2.0",
-    "xss-clean": "^0.1.4",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
     "hpp": "^0.2.3",
     "joi": "^17.11.0",
-    "bcrypt": "^5.1.1",
     "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "pdfjs-dist": "6.5.438",
     "speakeasy": "^2.0.0",
+    "tesseract.js": "7.0.0",
+    "tesseract.js-core": "7.0.0",
+    "twilio": "^4.20.0",
     "winston": "^3.11.0",
-    "node-fetch": "^3.3.2"
+    "xss-clean": "^0.1.4"
   },
-  "devDependencies": { "nodemon": "^3.0.2" },
-  "engines": { "node": ">=18.0.0" }
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
 }

@@ -90,11 +90,33 @@
       <button type="submit" class="btn btn-primary" style="width:100%" data-t="auth_create_account">Créer mon compte</button>
     </form>
 
-    <div id="auth-error" class="auth-error"></div>
+    <div id="auth-error" class="auth-error" role="status"></div>
+    <button type="button" id="guest-continue" class="btn btn-outline" data-t="guest_continue">Continuer sans compte</button>
   </div>
 </div>
 
-<div class="container" id="app-root">
+<main class="container hidden" id="guest-root">
+  <section class="card">
+    <div class="card-header">
+      <div class="card-header-icon" aria-hidden="true">🏥</div>
+      <div><h1 tabindex="-1" data-t="guest_title">Bienvenue sur SantéConnect</h1><p data-t="guest_mode">Accès visiteur</p></div>
+    </div>
+    <div class="card-body">
+      <p data-t="guest_intro">Découvrez comment SantéConnect relie les patients, les professionnels de santé, les pharmacies et les laboratoires.</p>
+      <ul class="guest-services">
+        <li data-t="guest_service_patient">Suivi des ordonnances et rendez-vous pour les patients.</li>
+        <li data-t="guest_service_pro">Coordination des prescriptions et des analyses pour les professionnels.</li>
+      </ul>
+      <p data-t="guest_limit">Un compte est nécessaire pour accéder aux dossiers et utiliser les services de santé.</p>
+      <div class="form-actions">
+        <button type="button" class="btn btn-primary" id="guest-sign-in" data-t="auth_login_btn">Se connecter</button>
+        <button type="button" class="btn btn-outline" id="guest-sign-up" data-t="auth_create_account">Créer mon compte</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="container hidden" id="app-root">
 
   <!-- ── ROLE SELECTOR (hero band) ── -->
   <div class="hero-band">
@@ -148,6 +170,11 @@
 
   <!-- ══════════════════ PAGE MÉDECIN ══════════════════ -->
   <div id="page-medecin" class="page">
+    <div class="card">
+      <div class="card-body">
+        <a href="/recherche-medicale.html" class="btn btn-outline" data-t="evidence_link">Recherche médicale</a>
+      </div>
+    </div>
 
     <!-- Sélecteur de spécialité -->
     <div class="card">

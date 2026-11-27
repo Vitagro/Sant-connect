@@ -1,6 +1,15 @@
 // SantéConnect v3 — Translations FR / AR / EN
 const LANG = {
 fr: {
+  guest_continue: "Continuer sans compte",
+  guest_title: "Bienvenue sur SantéConnect",
+  guest_mode: "Accès visiteur",
+  guest_intro: "Découvrez comment SantéConnect relie les patients, les professionnels de santé, les pharmacies et les laboratoires.",
+  guest_service_patient: "Suivi des ordonnances et rendez-vous pour les patients.",
+  guest_service_pro: "Coordination des prescriptions et des analyses pour les professionnels.",
+  guest_limit: "Un compte est nécessaire pour accéder aux dossiers et utiliser les services de santé.",
+  guest_auth_unavailable: "Le service est momentanément indisponible. Vous pouvez continuer sans compte.",
+  evidence_link: 'Recherche médicale',
   app_name:"SantéConnect v3", app_tagline:"Plateforme médicale connectée — Toutes spécialités",
   version:"v3.0",
   // Rôles
@@ -199,6 +208,15 @@ fr: {
 },
 
 ar: {
+  guest_continue: "المتابعة بدون حساب",
+  guest_title: "مرحبًا بك في SantéConnect",
+  guest_mode: "وضع الزائر",
+  guest_intro: "تعرّف على كيفية ربط SantéConnect بين المرضى والمهنيين الصحيين والصيدليات والمختبرات.",
+  guest_service_patient: "متابعة الوصفات والمواعيد للمرضى.",
+  guest_service_pro: "تنسيق الوصفات والفحوصات للمهنيين.",
+  guest_limit: "يلزم حساب للوصول إلى الملفات واستخدام الخدمات الصحية.",
+  guest_auth_unavailable: "الخدمة غير متاحة مؤقتًا. يمكنك المتابعة بدون حساب.",
+  evidence_link: 'البحث الطبي',
   app_name:"صحتي كونيكت v3", app_tagline:"منصة طبية متكاملة — جميع التخصصات",
   version:"v3.0",
   choose_role:"اختر دورك", choose_role_sub:"ادخل إلى مساحتك الشخصية",
@@ -368,6 +386,15 @@ ar: {
 },
 
 en: {
+  guest_continue: "Continue without an account",
+  guest_title: "Welcome to SantéConnect",
+  guest_mode: "Guest access",
+  guest_intro: "See how SantéConnect connects patients, health professionals, pharmacies and laboratories.",
+  guest_service_patient: "Prescription and appointment tracking for patients.",
+  guest_service_pro: "Prescription and laboratory test coordination for professionals.",
+  guest_limit: "An account is required to access records and use health services.",
+  guest_auth_unavailable: "The service is temporarily unavailable. You can continue without an account.",
+  evidence_link: 'Medical research',
   app_name:"SanteConnect v3", app_tagline:"Connected healthcare — All specialties",
   version:"v3.0",
   choose_role:"Choose your role", choose_role_sub:"Access your personalized space",
@@ -537,6 +564,15 @@ en: {
 },
 
 darija: {
+  guest_continue: "كمّل بلا حساب",
+  guest_title: "مرحبا بيك فـ SantéConnect",
+  guest_mode: "ولوج الزائر",
+  guest_intro: "تعرّف كيفاش SantéConnect كيربط بين المرضى والمهنيين ديال الصحة والصيدليات والمختبرات.",
+  guest_service_patient: "تتبّع الوصفات والمواعيد ديال المرضى.",
+  guest_service_pro: "تنسيق الوصفات والتحاليل للمهنيين.",
+  guest_limit: "خاصّ حساب باش تشوف الملفات وتستعمل الخدمات الصحية.",
+  guest_auth_unavailable: "الخدمة موقوفة مؤقتاً. تقدر تكمّل بلا حساب.",
+  evidence_link: 'البحث فالمجال الطبي',
   app_name:"صحتي كونيكت v3", app_tagline:"منصة طبية ديال المغرب — كاع التخصصات",
   version:"v3.0",
   choose_role:"ختار الدور ديالك", choose_role_sub:"دخل للفضاء ديالك",

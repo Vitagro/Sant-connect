@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'none'; worker-src 'self'; img-src 'self' blob: data:; base-uri 'none'; form-action 'none'">
+  <title>Lecture de documents — SantéConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/evidence.css">
+  <script src="/js/document-reader.js" defer></script>
+</head>
+<body>
+  <nav class="nav"><a class="nav-brand" href="/recherche-medicale.html">← Recherche médicale</a></nav>
+  <main class="container evidence">
+    <section class="card">
+      <div class="card-header"><div class="card-header-text"><h1>Lecture de documents</h1></div></div>
+      <div class="card-body evidence-stack">
+        <p>Ouvrez un fichier TXT (128 Ko), PDF de huit pages maximum lues, PNG ou JPEG (8 Mo maximum). Les fichiers et extraits sont traités dans cet onglet. Comparez toujours les extraits au document original.</p>
+        <div class="form-group">
+          <label for="document-file">Choisir un document</label>
+          <input id="document-file" type="file" accept=".txt,.pdf,.png,.jpg,.jpeg">
+        </div>
+        <div class="form-group">
+          <label for="document-language">Langue du texte scanné</label>
+          <select id="document-language">
+            <option value="fra">Français</option>
+            <option value="ara">Arabe</option>
+            <option value="eng">Anglais</option>
+          </select>
+        </div>
+        <div><button type="button" class="btn btn-outline" id="document-clear">Effacer le document</button></div>
+        <p id="document-status" role="status"></p>
+        <ol id="document-results" class="evidence-stack"></ol>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -2,7 +2,7 @@
   "version": 2,
   "name": "sante-connect-vita",
   "builds": [
-    { "src": "api/server.js", "use": "@vercel/node" },
+    { "src": "api/server.js", "use": "@vercel/node", "config": { "includeFiles": ["node_modules/pdfjs-dist/build/pdf*.min.mjs", "node_modules/tesseract.js/dist/{tesseract.esm.min.js,worker.min.js}", "node_modules/tesseract.js-core/tesseract-core-lstm.wasm*", "node_modules/@tesseract.js-data/*/4.0.0_best_int/*.traineddata.gz"] } },
     { "src": "public/**",    "use": "@vercel/static" }
   ],
   "routes": [

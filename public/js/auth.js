@@ -118,6 +118,7 @@ function onAuthSuccess() {
   document.getElementById('nav-username').classList.remove('hidden');
 
   const staff = ['assistant', 'infirmier'].includes(currentUser.role);
+  document.getElementById('appointment-calendar').classList.toggle('hidden', !staff && !['medecin','patient'].includes(currentUser.role));
   document.getElementById('doctor-team').classList.toggle('hidden', currentUser.role !== 'medecin');
   document.getElementById('staff-workspace').classList.toggle('hidden', !staff);
   if (!staff) void loadPharmaciesLabos();

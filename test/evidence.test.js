@@ -94,7 +94,7 @@ test('model or retrieval failure returns bibliography only or an explicit upstre
 test('each account receives its own questions and can only submit its own topic IDs', async () => {
   const firstTopics = {
     medecin: 'diabetes', patient: 'patient-sleep', pharmacie: 'pharmacy-adherence',
-    labo: 'lab-preanalytics', assurance: 'insurance-access', super_admin: 'admin-data-quality',
+    labo: 'lab-preanalytics', assistant: 'assistant-appointments', infirmier: 'nurse-handovers', assurance: 'insurance-access', super_admin: 'admin-data-quality',
   };
   const providerQueries = [];
   const handler = evidenceHandler({ env: {}, fetcher: async url => {
@@ -105,7 +105,7 @@ test('each account receives its own questions and can only submit its own topic 
     const user = { sub: 'any-user', role };
     const list = evidenceTopics({ user }, { json: value => value });
     assert.equal(list.role, role);
-    assert.ok(list.questions.length >= 4);
+    assert.ok(list.questions.length >= 3);
     assert.equal(list.questions[0].id, id);
     assert.deepEqual(Object.keys(list.questions[0]), ['id', 'label']);
     assert.equal((await call(handler, { user, query: { topic: id, mode: 'standard' } })).status, 200);

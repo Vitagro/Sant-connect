@@ -34,6 +34,9 @@ function switchAuthTab(tab) {
   const recoveryForm = document.getElementById('reset-password-form');
   recoveryForm.classList.toggle('hidden', tab !== 'reset');
   if (tab !== 'reset') recoveryForm.reset();
+  const inviteForm = document.getElementById('team-accept-form');
+  inviteForm.classList.toggle('hidden', tab !== 'team');
+  if (tab !== 'team') inviteForm.reset();
   document.getElementById('auth-status').textContent = '';
   document.getElementById('auth-error').textContent = '';
 }
@@ -114,7 +117,10 @@ function onAuthSuccess() {
   document.getElementById('nav-username').textContent = currentUser.username;
   document.getElementById('nav-username').classList.remove('hidden');
 
-  void loadPharmaciesLabos();
+  const staff = ['assistant', 'infirmier'].includes(currentUser.role);
+  document.getElementById('doctor-team').classList.toggle('hidden', currentUser.role !== 'medecin');
+  document.getElementById('staff-workspace').classList.toggle('hidden', !staff);
+  if (!staff) void loadPharmaciesLabos();
   const roleCards = document.querySelectorAll('.role-grid .role-card');
   const role = currentUser.role === 'super_admin' ? 'superadmin' : currentUser.role;
   const assignedCard = Array.from(roleCards).find(card => card.dataset.role === role);
@@ -127,7 +133,7 @@ function onAuthSuccess() {
     subtitle.textContent = t(subtitle.dataset.t);
   }
   if (currentUser.role === 'super_admin') {
-    roleCards.forEach(c => c.style.display = '');
+    roleCards.forEach(c => c.style.display = ['assistant', 'infirmier'].includes(c.dataset.role) ? 'none' : '');
     const adminCard = document.querySelector('.role-card[data-role="superadmin"]');
     if (adminCard) adminCard.style.display = '';
     setRole('superadmin');

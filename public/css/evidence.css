@@ -1,0 +1,10 @@
+.evidence { max-width: 850px; }
+.evidence h1 { color: white; font-size: 1.25rem; }
+.nav .nav-brand { color: white; }
+.evidence-stack { display: grid; gap: 0.75rem; margin-block: 1rem; }
+.evidence-stack:empty, .evidence [role="status"]:empty { display: none; }
+.evidence ol, .evidence ul { padding-inline-start: 1.5rem; }
+.evidence li { overflow-wrap: anywhere; }
+.evidence blockquote { border-inline-start: 3px solid var(--border-strong); padding-inline-start: 0.75rem; margin-block: 0.35rem 0.75rem; color: var(--text-2); }
+.evidence a:not(.btn) { color: var(--primary); }
+.evidence #document-results li { white-space: pre-wrap; }

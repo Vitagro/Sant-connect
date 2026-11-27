@@ -1,6 +1,7 @@
 // SantéConnect v3 — Translations FR / AR / EN
 const LANG = {
 fr: {
+  evidence_link: 'Recherche médicale',
   app_name:"SantéConnect v3", app_tagline:"Plateforme médicale connectée — Toutes spécialités",
   version:"v3.0",
   // Rôles
@@ -199,6 +200,7 @@ fr: {
 },
 
 ar: {
+  evidence_link: 'البحث الطبي',
   app_name:"صحتي كونيكت v3", app_tagline:"منصة طبية متكاملة — جميع التخصصات",
   version:"v3.0",
   choose_role:"اختر دورك", choose_role_sub:"ادخل إلى مساحتك الشخصية",
@@ -368,6 +370,7 @@ ar: {
 },
 
 en: {
+  evidence_link: 'Medical research',
   app_name:"SanteConnect v3", app_tagline:"Connected healthcare — All specialties",
   version:"v3.0",
   choose_role:"Choose your role", choose_role_sub:"Access your personalized space",
@@ -537,6 +540,7 @@ en: {
 },
 
 darija: {
+  evidence_link: 'البحث فالمجال الطبي',
   app_name:"صحتي كونيكت v3", app_tagline:"منصة طبية ديال المغرب — كاع التخصصات",
   version:"v3.0",
   choose_role:"ختار الدور ديالك", choose_role_sub:"دخل للفضاء ديالك",

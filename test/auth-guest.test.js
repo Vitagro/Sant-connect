@@ -107,7 +107,15 @@ test('sign-up creates a linked account, acts on database errors and denies anony
   assert.equal(patientMenu.status, 200);
   assert.ok((await patientMenu.json()).questions.some(question => question.id === 'patient-sleep'));
   assert.equal((await fetch(base + '/api/evidence?topic=diabetes&mode=standard', { headers })).status, 400);
+  const adminHeaders = { Authorization: 'Bearer ' + jwt.sign(
+    { sub: user.id, role: 'super_admin' }, process.env.JWT_SECRET,
+  ) };
+  assert.equal((await fetch(base + '/api/admin/users', { headers })).status, 403);
+  assert.equal((await fetch(base + '/api/admin/users', { headers: adminHeaders })).status, 403);
+  currentRole = 'super_admin';
+  assert.equal((await fetch(base + '/api/admin/users', { headers: adminHeaders })).status, 200);
   accountActive = false;
+  assert.equal((await fetch(base + '/api/admin/users', { headers: adminHeaders })).status, 403);
   assert.equal((await fetch(base + '/api/evidence/topics', { headers })).status, 403);
 
   failLookup = true;

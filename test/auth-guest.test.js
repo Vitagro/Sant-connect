@@ -12,6 +12,8 @@ async function listen(t, server) {
 }
 
 test('sign-up creates a linked account, acts on database errors and denies anonymous private requests', async t => {
+  let accountActive = true;
+  let currentRole = 'medecin';
   let lastProfile;
   let user;
   let failLookup = false;
@@ -20,13 +22,16 @@ test('sign-up creates a linked account, acts on database errors and denies anony
   let calls = 0;
   const database = createServer(async (req, res) => {
     calls++;
-    const path = new URL(req.url, 'http://localhost').pathname;
-    const table = path.split('/').at(-1);
+    const url = new URL(req.url, 'http://localhost');
+    const table = url.pathname.split('/').at(-1);
     res.setHeader('Content-Type', 'application/json');
     if (req.method === 'GET' && table === 'users') {
       if (failLookup) {
         res.statusCode = 401;
         return res.end(JSON.stringify({ code: '42501', message: 'test database rejection' }));
+      }
+      if (url.searchParams.get('id')) {
+        return res.end(JSON.stringify(accountActive ? [{ role: currentRole }] : []));
       }
       return res.end('[]');
     }
@@ -70,7 +75,8 @@ test('sign-up creates a linked account, acts on database errors and denies anony
   assert.match(home, /class="container hidden" id="app-root"/);
   for (const [method, route] of [
     ['GET', '/api/ordonnances'], ['GET', '/api/pharmacies'], ['GET', '/api/laboratoires'],
-    ['GET', '/api/auth/me'], ['GET', '/api/evidence?topic=diabetes&mode=standard'],
+    ['GET', '/api/auth/me'], ['GET', '/api/evidence/topics'],
+    ['GET', '/api/evidence?topic=diabetes&mode=standard'],
     ['POST', '/api/ordonnances'], ['POST', '/api/confirmations/pharmacie'],
     ['POST', '/api/confirmations/labo'], ['POST', '/api/paiements/initier'],
     ['POST', '/api/assurances/verifier'], ['POST', '/api/notify/test'],
@@ -91,6 +97,18 @@ test('sign-up creates a linked account, acts on database errors and denies anony
   assert.equal(lastProfile.cabinet, 'Cabinet test');
   assert.ok(user.password_hash.startsWith('$2'));
   assert.equal(result.user.password_hash, undefined);
+
+  const headers = { Authorization: 'Bearer ' + result.token };
+  const doctorMenu = await fetch(base + '/api/evidence/topics', { headers });
+  assert.equal(doctorMenu.status, 200);
+  assert.equal((await doctorMenu.json()).role, 'medecin');
+  currentRole = 'patient';
+  const patientMenu = await fetch(base + '/api/evidence/topics', { headers });
+  assert.equal(patientMenu.status, 200);
+  assert.ok((await patientMenu.json()).questions.some(question => question.id === 'patient-sleep'));
+  assert.equal((await fetch(base + '/api/evidence?topic=diabetes&mode=standard', { headers })).status, 400);
+  accountActive = false;
+  assert.equal((await fetch(base + '/api/evidence/topics', { headers })).status, 403);
 
   failLookup = true;
   const unavailable = await post({ ...payload, username: 'outage-test' });

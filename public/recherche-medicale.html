@@ -18,22 +18,18 @@
       <div class="card-body">
         <p>Outil de veille documentaire sans validation clinique. Pour toute décision de soins ou interprétation clinique, consultez un professionnel de santé.</p>
         <section id="evidence-access" class="evidence-stack" aria-labelledby="evidence-access-heading">
-          <h2 id="evidence-access-heading">Accès médecin</h2>
-          <p>Les recherches PubMed via Europe PMC, la lecture locale de PDF et d’images avec OCR et les commandes vocales sont disponibles dans l’espace médecin.</p>
+          <h2 id="evidence-access-heading">Accès avec un compte SantéConnect</h2>
+          <p>Connectez-vous pour voir les questions proposées pour votre espace et consulter les publications qui s’y rapportent.</p>
           <p id="evidence-access-status" role="status">Vérification de la session…</p>
           <div><a class="btn btn-outline" href="/">Accéder à SantéConnect</a></div>
         </section>
         <div id="evidence-tools" hidden>
+          <h2 id="evidence-workspace"></h2>
           <form id="evidence-form" class="evidence-stack">
             <div class="form-group">
-              <label for="evidence-topic">Thème</label>
+              <label for="evidence-topic">Question</label>
               <select id="evidence-topic" required>
-                <option value="">Choisir un thème</option>
-                <option value="diabetes">Diabète de type 2</option>
-                <option value="hypertension">Hypertension artérielle</option>
-                <option value="asthma">Asthme</option>
-                <option value="vaccination">Vaccination</option>
-                <option value="sleep">Sommeil</option>
+                <option value="">Choisir une question</option>
               </select>
             </div>
             <div class="form-group">
@@ -45,7 +41,7 @@
             </div>
             <div><button type="submit" class="btn btn-primary">Rechercher</button></div>
           </form>
-          <details id="evidence-voice" class="evidence-stack">
+          <details id="evidence-voice" class="evidence-stack" hidden>
             <summary>Commande vocale locale</summary>
             <p>Dites un thème pour le sélectionner. Le microphone et la lecture vocale dépendent des langues installées sur cet appareil.</p>
             <div class="form-group">

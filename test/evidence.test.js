@@ -1,6 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { evidenceHandler } = require('../lib/evidence');
+const { evidenceTopics } = require('../lib/evidence-topics');
 
 const quote = 'The findings varied substantially across the included studies.';
 const row = {
@@ -23,7 +24,7 @@ async function call(handler, options = {}) {
     status(status) { result.status = status; return this; },
     json(value) { result.body = value; },
   };
-  await handler({ method: 'GET', query, user: { sub: 'pilot' }, ...options }, res);
+  await handler({ method: 'GET', query, user: { sub: 'pilot', role: 'medecin' }, ...options }, res);
   return result;
 }
 
@@ -71,7 +72,7 @@ test('synthesis requires the pilot account, a known source, a literal quote and 
     assert.ok(!options.body.includes('pilot'));
     return response(completion({ approved: [0] }));
   } });
-  assert.equal((await call(handler, { user: { sub: 'other' } })).body.synthesis, 'disabled');
+  assert.equal((await call(handler, { user: { sub: 'other', role: 'medecin' } })).body.synthesis, 'disabled');
   assert.equal(modelCalls, 0);
   const result = await call(handler);
   assert.equal(modelCalls, 2);
@@ -88,4 +89,41 @@ test('model or retrieval failure returns bibliography only or an explicit upstre
   assert.equal((await call(handler)).body.synthesis, 'unavailable');
   const offline = evidenceHandler({ fetcher: async () => { throw new Error('catalogue offline'); } });
   assert.equal((await call(offline)).status, 502);
+});
+
+test('each account receives its own questions and can only submit its own topic IDs', async () => {
+  const firstTopics = {
+    medecin: 'diabetes', patient: 'patient-sleep', pharmacie: 'pharmacy-adherence',
+    labo: 'lab-preanalytics', assurance: 'insurance-access', super_admin: 'admin-data-quality',
+  };
+  const providerQueries = [];
+  const handler = evidenceHandler({ env: {}, fetcher: async url => {
+    providerQueries.push(url.searchParams.get('query'));
+    return records(row);
+  } });
+  for (const [role, id] of Object.entries(firstTopics)) {
+    const user = { sub: 'any-user', role };
+    const list = evidenceTopics({ user }, { json: value => value });
+    assert.equal(list.role, role);
+    assert.ok(list.questions.length >= 4);
+    assert.equal(list.questions[0].id, id);
+    assert.deepEqual(Object.keys(list.questions[0]), ['id', 'label']);
+    assert.equal((await call(handler, { user, query: { topic: id, mode: 'standard' } })).status, 200);
+    const foreignTopic = role === 'medecin' ? 'patient-sleep' : 'diabetes';
+    assert.equal((await call(handler, { user, query: { topic: foreignTopic, mode: 'standard' } })).status, 400);
+  }
+  assert.equal(new Set(providerQueries).size, Object.keys(firstTopics).length);
+  assert.equal((await call(handler, { user: { role: 'guest' } })).status, 403);
+});
+
+test('a non-medical account cannot use the synthesis pilot', async () => {
+  const handler = evidenceHandler({ env, fetcher: async url => {
+    assert.ok(url instanceof URL);
+    return records(row);
+  } });
+  const result = await call(handler, {
+    user: { sub: 'pilot', role: 'patient' }, query: { topic: 'patient-sleep', mode: 'standard' },
+  });
+  assert.equal(result.body.synthesis, 'disabled');
+  assert.deepEqual(result.body.claims, []);
 });

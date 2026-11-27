@@ -11,6 +11,7 @@ const { supabase } = require('../lib/supabase');
 const wa = require('../lib/whatsapp');
 const { serveDocumentAsset } = require('../lib/document-assets');
 const { evidenceHandler } = require('../lib/evidence');
+const { getWorkspace, evidenceTopics } = require('../lib/evidence-topics');
 const { isEmailRequiredForRole, hashPassword, comparePassword, signToken, requireAuth, requireRole } = require('../lib/auth');
 
 // Reserve the administrative username for operator-managed accounts.
@@ -55,9 +56,28 @@ app.use('/api/', rateLimit({ windowMs: 15*60*1000, max: 100, standardHeaders: tr
 app.use('/api/auth/', rateLimit({ windowMs: 15*60*1000, max: 5, skipSuccessfulRequests: true }));
 app.use('/api/paiements/', rateLimit({ windowMs: 60*60*1000, max: 10 }));
 
+function evidenceNoCache(req, res, next) {
+  res.set('Cache-Control', 'no-store');
+  next();
+}
+
+async function requireEvidenceAccount(req, res, next) {
+  try {
+    const { data: account, error } = await supabase.from('users')
+      .select('role').eq('id', req.user.sub).eq('is_active', true).maybeSingle();
+    if (error) throw error;
+    if (!account || !getWorkspace(account.role)) return res.status(403).json({ error: 'role_not_allowed' });
+    req.user.role = account.role;
+    next();
+  } catch {
+    return res.status(503).json({ error: 'account_service_unavailable' });
+  }
+}
+
+app.get('/api/evidence/topics', evidenceNoCache, requireAuth, requireDatabase, requireEvidenceAccount, evidenceTopics);
+
 app.all('/api/evidence',
-  (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); },
-  requireAuth, requireRole('medecin'),
+  evidenceNoCache, requireAuth, requireDatabase, requireEvidenceAccount,
   rateLimit({ windowMs: 15 * 60 * 1000, limit: 15, standardHeaders: true, legacyHeaders: false }),
   evidenceHandler());
 

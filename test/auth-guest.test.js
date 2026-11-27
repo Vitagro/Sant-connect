@@ -31,7 +31,7 @@ test('sign-up creates a linked account, acts on database errors and denies anony
         return res.end(JSON.stringify({ code: '42501', message: 'test database rejection' }));
       }
       if (url.searchParams.get('id')) {
-        return res.end(JSON.stringify(accountActive ? [{ role: currentRole }] : []));
+        return res.end(JSON.stringify(accountActive ? [{ role: currentRole, session_version: 0 }] : []));
       }
       return res.end('[]');
     }
@@ -102,21 +102,24 @@ test('sign-up creates a linked account, acts on database errors and denies anony
   const doctorMenu = await fetch(base + '/api/evidence/topics', { headers });
   assert.equal(doctorMenu.status, 200);
   assert.equal((await doctorMenu.json()).role, 'medecin');
+  assert.equal((await fetch(base + '/api/admin/users', { headers })).status, 403);
   currentRole = 'patient';
-  const patientMenu = await fetch(base + '/api/evidence/topics', { headers });
+  assert.equal((await fetch(base + '/api/evidence/topics', { headers })).status, 401);
+  const sessionHeaders = role => ({
+    Authorization: 'Bearer ' + jwt.sign({ sub: user.id, role }, process.env.JWT_SECRET),
+  });
+  const patientHeaders = sessionHeaders('patient');
+  const patientMenu = await fetch(base + '/api/evidence/topics', { headers: patientHeaders });
   assert.equal(patientMenu.status, 200);
   assert.ok((await patientMenu.json()).questions.some(question => question.id === 'patient-sleep'));
-  assert.equal((await fetch(base + '/api/evidence?topic=diabetes&mode=standard', { headers })).status, 400);
-  const adminHeaders = { Authorization: 'Bearer ' + jwt.sign(
-    { sub: user.id, role: 'super_admin' }, process.env.JWT_SECRET,
-  ) };
-  assert.equal((await fetch(base + '/api/admin/users', { headers })).status, 403);
-  assert.equal((await fetch(base + '/api/admin/users', { headers: adminHeaders })).status, 403);
+  assert.equal((await fetch(base + '/api/evidence?topic=diabetes&mode=standard', { headers: patientHeaders })).status, 400);
+  const adminHeaders = sessionHeaders('super_admin');
+  assert.equal((await fetch(base + '/api/admin/users', { headers: adminHeaders })).status, 401);
   currentRole = 'super_admin';
   assert.equal((await fetch(base + '/api/admin/users', { headers: adminHeaders })).status, 200);
   accountActive = false;
-  assert.equal((await fetch(base + '/api/admin/users', { headers: adminHeaders })).status, 403);
-  assert.equal((await fetch(base + '/api/evidence/topics', { headers })).status, 403);
+  assert.equal((await fetch(base + '/api/admin/users', { headers: adminHeaders })).status, 401);
+  assert.equal((await fetch(base + '/api/evidence/topics', { headers: adminHeaders })).status, 401);
 
   failLookup = true;
   const unavailable = await post({ ...payload, username: 'outage-test' });

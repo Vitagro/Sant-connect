@@ -198,3 +198,9 @@ vercel open
 Sur le projet cible, renseigner le service Supabase de SantéConnect et `JWT_SECRET` dans les variables serveur. Conserver le secret JWT existant si des sessions doivent rester valides. Confirmer que le schéma v3 est chargé, notamment `public.users` et les tables des profils professionnels, et que le rôle serveur dispose des autorisations Data API requises. Le contrôle `/api/status` vérifie la lecture de la table des ordonnances. Vérifier aussi une inscription de test dans un environnement de prévisualisation.
 
 Sans service de comptes opérationnel, l’inscription et la connexion renvoient une indisponibilité temporaire. **Continuer sans compte** ouvre la présentation publique des services sans créer de session. Le visiteur ne peut pas consulter les ordonnances ni envoyer de demandes, de notifications ou d’initiations de paiement depuis cet espace.
+
+## Sécurité du compte
+
+Après le schéma initial, appliquer la migration `supabase/migrations/20261127115857_account_recovery.sql` avant le déploiement de la récupération. Elle ajoute une version de session et le condensat du code de récupération. Les comptes existants conservent leur mot de passe et peuvent générer leur premier code depuis leur espace.
+
+Dans **Sécurité du compte**, le mot de passe actuel est requis pour générer un code ou le changer. Le code est affiché une fois. Il remplace le code précédent, expire après un an et permet une seule réinitialisation. Une réinitialisation ou un changement de mot de passe invalide les sessions et le code précédents. Conserver un code dans un endroit sûr avant de perdre le mot de passe. Cette version ne dépend d’aucun service d’envoi de courriels.

@@ -1,33 +1,44 @@
 const form = document.getElementById('evidence-form');
 const statusLine = document.getElementById('evidence-status');
 const results = document.getElementById('evidence-results');
+const topicPicker = document.getElementById('evidence-topic');
+let workspaceRole;
 
 async function showWorkspace() {
   const access = document.getElementById('evidence-access');
   const message = document.getElementById('evidence-access-status');
   const token = localStorage.getItem('sc_token');
-  const signInMessage = 'Connectez-vous à SantéConnect avec un compte médecin.';
+  const signInMessage = 'Connectez-vous à SantéConnect pour afficher les questions de votre espace.';
   if (!token) {
     message.textContent = signInMessage;
     return;
   }
   try {
-    const response = await fetch('/api/auth/me', {
+    const response = await fetch('/api/evidence/topics', {
       headers: { Authorization: 'Bearer ' + token }, cache: 'no-store',
     });
-    if ([401, 403, 404].includes(response.status)) {
+    if (response.status === 401) {
       message.textContent = signInMessage;
       return;
     }
-    if (!response.ok) throw new Error('Session unavailable');
-    const { user } = await response.json();
-    if (user?.role !== 'medecin') {
-      message.textContent = 'Le compte connecté ne donne pas accès à l’espace médecin.';
+    if (response.status === 403) {
+      message.textContent = 'Ce compte ne permet pas d’accéder à la recherche.';
       return;
+    }
+    if (!response.ok) throw new Error('Session unavailable');
+    const { role, label, questions } = await response.json();
+    workspaceRole = role;
+    document.getElementById('evidence-workspace').textContent = 'Espace ' + label;
+    for (const { id, label: question } of questions) {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = question;
+      topicPicker.append(option);
     }
     access.hidden = true;
     document.getElementById('evidence-tools').hidden = false;
-    document.getElementById('evidence-documents').hidden = false;
+    document.getElementById('evidence-voice').hidden = role !== 'medecin';
+    document.getElementById('evidence-documents').hidden = role !== 'medecin';
   } catch {
     message.textContent = 'Impossible de vérifier votre session pour le moment. Réessayez dans un instant.';
   }
@@ -57,7 +68,7 @@ function render(data) {
   }
   const notes = [];
   if (data.partial) notes.push('Certaines recherches n’ont pas abouti.');
-  if (data.synthesis === 'disabled') notes.push('La synthèse IA pilote est désactivée pour cette session.');
+  if (workspaceRole === 'medecin' && data.synthesis === 'disabled') notes.push('La synthèse IA pilote est désactivée pour cette session.');
   if (data.synthesis === 'unavailable') notes.push('Synthèse indisponible. Consultez les références originales.');
   statusLine.textContent = notes.join(' ');
   if (data.claims.length) {
@@ -88,14 +99,18 @@ form.addEventListener('submit', async event => {
   statusLine.textContent = 'Recherche en cours…';
   try {
     const search = new URLSearchParams({
-      topic: document.getElementById('evidence-topic').value,
+      topic: topicPicker.value,
       mode: document.getElementById('evidence-mode').value,
     });
     const token = localStorage.getItem('sc_token');
     const headers = token ? { Authorization: 'Bearer ' + token } : {};
     const response = await fetch('/api/evidence?' + search, { cache: 'no-store', headers });
     if (response.status === 401 || response.status === 403) {
-      statusLine.textContent = 'Connectez-vous à SantéConnect avec un compte médecin pour lancer la recherche.';
+      statusLine.textContent = 'Vérifiez votre connexion à SantéConnect et rechargez cette page.';
+      return;
+    }
+    if (response.status === 400) {
+      statusLine.textContent = 'Cette question ne fait plus partie de votre espace. Rechargez la page.';
       return;
     }
     if (response.status === 429) {

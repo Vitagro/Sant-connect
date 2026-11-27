@@ -1,7 +1,7 @@
 // SantéConnect v3 — Translations FR / AR / EN
 const LANG = {
 fr: {
-  evidence_entry_desc: "Recherche scientifique sourcée, lecture de documents et commande vocale. Les outils sont réservés à l’espace médecin.",
+  evidence_entry_desc: "Explorez des questions adaptées à votre compte et consultez les publications sources.",
   guest_continue: "Continuer sans compte",
   guest_title: "Bienvenue sur SantéConnect",
   guest_mode: "Accès visiteur",
@@ -209,7 +209,7 @@ fr: {
 },
 
 ar: {
-  evidence_entry_desc: "بحث علمي موثّق وقراءة المستندات وأوامر صوتية. تتوفر هذه الأدوات في مساحة الطبيب.",
+  evidence_entry_desc: "استكشف الأسئلة المناسبة لحسابك واطّلع على المنشورات الأصلية.",
   guest_continue: "المتابعة بدون حساب",
   guest_title: "مرحبًا بك في SantéConnect",
   guest_mode: "وضع الزائر",
@@ -388,7 +388,7 @@ ar: {
 },
 
 en: {
-  evidence_entry_desc: "Scientific research with references, document reading and voice controls. These tools are available in the doctor workspace.",
+  evidence_entry_desc: "Explore questions tailored to your account and consult the original publications.",
   guest_continue: "Continue without an account",
   guest_title: "Welcome to SantéConnect",
   guest_mode: "Guest access",
@@ -567,7 +567,7 @@ en: {
 },
 
 darija: {
-  evidence_entry_desc: "بحث علمي بالمراجع، وقراية الوثائق، وأوامر صوتية. هاد الأدوات متوفرة ففضاء الطبيب.",
+  evidence_entry_desc: "استكشف الأسئلة المناسبة للحساب ديالك وشوف المنشورات الأصلية.",
   guest_continue: "كمّل بلا حساب",
   guest_title: "مرحبا بيك فـ SantéConnect",
   guest_mode: "ولوج الزائر",

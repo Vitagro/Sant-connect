@@ -154,6 +154,38 @@
     </div>
   </section>
 
+  <details class="card account-security hidden" id="appointment-calendar">
+    <summary>Rendez-vous</summary>
+    <div class="card-body calendar-stack">
+      <p>Heures du Maroc · créneaux de 30 minutes</p>
+      <section id="calendar-patient" hidden>
+        <div class="form-grid-2">
+          <div class="form-group"><label for="calendar-doctor">Médecin</label><select id="calendar-doctor"></select></div>
+          <div class="form-group"><label for="calendar-date">Date du rendez-vous</label><input type="date" id="calendar-date"></div>
+        </div>
+        <h3>Créneaux disponibles</h3>
+        <div id="calendar-available" class="calendar-slots"></div>
+        <h3>Mes prochains rendez-vous</h3>
+        <ul id="calendar-mine" class="calendar-list"></ul>
+      </section>
+      <section id="calendar-planner" hidden>
+        <form id="calendar-range" class="calendar-stack">
+          <div class="form-grid-2">
+            <div class="form-group"><label for="planner-date">Journée à gérer</label><input type="date" id="planner-date" name="day" required></div>
+            <div class="form-group"><label for="calendar-action">Disponibilité</label><select id="calendar-action" name="status"><option value="available">Ouvrir la plage</option><option value="blocked">Bloquer la plage</option></select></div>
+            <div class="form-group"><label for="calendar-start">Début</label><select id="calendar-start" name="start" required></select></div>
+            <div class="form-group"><label for="calendar-end">Fin</label><select id="calendar-end" name="end" required></select></div>
+          </div>
+          <p>Les créneaux déjà réservés restent confirmés lors d’une modification de plage.</p>
+          <div><button type="submit" class="btn btn-primary">Appliquer à la plage</button></div>
+        </form>
+        <h3>Horaires de la journée</h3>
+        <ul id="calendar-schedule" class="calendar-list"></ul>
+      </section>
+      <p id="calendar-status" role="status"></p>
+    </div>
+  </details>
+
   <details class="card account-security" id="account-security">
     <summary data-t="account_security_title">Sécurité du compte</summary>
     <div class="card-body">
@@ -878,6 +910,7 @@
 <script src="js/auth.js"></script>
 <script src="js/account-security.js"></script>
 <script src="js/doctor-team.js"></script>
+<script src="js/appointments.js"></script>
 
 <!-- ── VITA TECH FOOTER ── -->
 <footer style="background:#063D55;color:rgba(255,255,255,.55);text-align:center;padding:18px 24px;font-size:11px;border-top:2px solid #00C9A7;margin-top:0">

@@ -14,6 +14,7 @@ const { evidenceHandler } = require('../lib/evidence');
 const { generateRecoveryCode, resetPassword, changePassword } = require('../lib/account-security');
 const { getWorkspace, evidenceTopics } = require('../lib/evidence-topics');
 const team = require('../lib/doctor-team');
+const appointments = require('../lib/appointments');
 const { isTeamRole, isEmailRequiredForRole, hashPassword, comparePassword, signToken, requireAuth, requireRole } = require('../lib/auth');
 
 // Reserve the administrative username for operator-managed accounts.
@@ -57,6 +58,7 @@ app.get('/api/document-assets/:asset', serveDocumentAsset);
 app.use('/api/', rateLimit({ windowMs: 15*60*1000, max: 100, standardHeaders: true }));
 app.use('/api/auth/', rateLimit({ windowMs: 15*60*1000, max: 5, skipSuccessfulRequests: true }));
 app.use('/api/paiements/', rateLimit({ windowMs: 60*60*1000, max: 10 }));
+app.use('/api/appointments', appointments);
 
 function evidenceNoCache(req, res, next) {
   res.set('Cache-Control', 'no-store');
